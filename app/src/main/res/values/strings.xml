@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">VIC</string>
+    <string name="logo">Logo</string>
+    <string name="date">28/7/2019</string>
+    <string name="time">6:30 PM</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="delete">Delete?</string>
+    <string name="wanna_delete">Do you want to DELETE this file?</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_txt">Delete</string>
+</resources>

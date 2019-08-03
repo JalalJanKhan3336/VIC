@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Padding -->
+    <dimen name="xsm_pad">4dp</dimen>
+    <dimen name="sm_pad">10dp</dimen>
+    <dimen name="norm_pad">16dp</dimen>
+    <dimen name="lg_pad">24dp</dimen>
+    <dimen name="xlg_pad">36dp</dimen>
+
+    <!-- Margin -->
+    <dimen name="xsm_margin">4dp</dimen>
+    <dimen name="sm_margin">10dp</dimen>
+    <dimen name="norm_margin">16dp</dimen>
+    <dimen name="lg_margin">24dp</dimen>
+    <dimen name="xlg_margin">36dp</dimen>
+
+    <!-- Text Size -->
+    <dimen name="xsm_size">9sp</dimen>
+    <dimen name="sm_size">12sp</dimen>
+    <dimen name="norm_size">16sp</dimen>
+    <dimen name="lg_size">24sp</dimen>
+    <dimen name="xlg_size">36sp</dimen>
+
+</resources>
