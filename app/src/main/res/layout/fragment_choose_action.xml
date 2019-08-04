@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="@dimen/norm_pad"
+    tools:context=".Dialog.ChooseActionFragment"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Dialog Title -->
+    <TextView
+        android:id="@+id/dialog_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/choose_action"
+        android:textColor="@android:color/black"
+        android:textSize="@dimen/norm_size"
+        android:textStyle="bold|italic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Image Camera Action -->
+    <ImageView
+        android:id="@+id/image_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/norm_margin"
+        android:contentDescription="@string/app_name"
+        android:scaleType="fitCenter"
+        android:src="@drawable/camera"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dialog_title"
+        app:layout_constraintEnd_toStartOf="@+id/browse_image"/>
+
+    <!-- Image Camera Action Text -->
+    <TextView
+        android:id="@+id/image_camera_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/capture_image"
+        android:textColor="@android:color/black"
+        android:textSize="@dimen/xsm_size"
+        android:textStyle="normal|italic"
+        app:layout_constraintEnd_toEndOf="@+id/image_camera"
+        app:layout_constraintStart_toStartOf="@+id/image_camera"
+        app:layout_constraintTop_toBottomOf="@+id/image_camera"/>
+
+    <!-- Browse Image Action -->
+    <ImageView
+        android:id="@+id/browse_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/app_name"
+        android:scaleType="fitCenter"
+        android:src="@drawable/image_gallery"
+        app:layout_constraintStart_toEndOf="@+id/image_camera"
+        app:layout_constraintTop_toTopOf="@+id/image_camera"
+        app:layout_constraintBottom_toBottomOf="@+id/image_camera"
+        app:layout_constraintEnd_toStartOf="@+id/video_camera"/>
+
+    <!-- Browse Image Action Text -->
+    <TextView
+        android:id="@+id/image_gallery_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/browse_image"
+        android:textColor="@android:color/black"
+        android:textSize="@dimen/xsm_size"
+        android:textStyle="normal|italic"
+        app:layout_constraintEnd_toEndOf="@+id/browse_image"
+        app:layout_constraintStart_toStartOf="@+id/browse_image"
+        app:layout_constraintTop_toBottomOf="@+id/browse_image"/>
+
+
+    <!-- Capture Video Camera Action -->
+    <ImageView
+        android:id="@+id/video_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/app_name"
+        android:scaleType="fitCenter"
+        android:src="@drawable/video_camera"
+        app:layout_constraintStart_toEndOf="@+id/browse_image"
+        app:layout_constraintTop_toTopOf="@+id/browse_image"
+        app:layout_constraintBottom_toBottomOf="@+id/browse_image"
+        app:layout_constraintEnd_toStartOf="@+id/browse_video"/>
+
+    <!-- Browse Video Action Text -->
+    <TextView
+        android:id="@+id/video_camera_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/capture_video"
+        android:textColor="@android:color/black"
+        android:textSize="@dimen/xsm_size"
+        android:textStyle="normal|italic"
+        app:layout_constraintEnd_toEndOf="@+id/video_camera"
+        app:layout_constraintStart_toStartOf="@+id/video_camera"
+        app:layout_constraintTop_toBottomOf="@+id/video_camera"/>
+
+    <!-- Browse Video Action -->
+    <ImageView
+        android:id="@+id/browse_video"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/app_name"
+        android:scaleType="fitCenter"
+        android:src="@drawable/video_gallery"
+        app:layout_constraintStart_toEndOf="@+id/video_camera"
+        app:layout_constraintTop_toTopOf="@+id/video_camera"
+        app:layout_constraintBottom_toBottomOf="@+id/video_camera"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Browse Video Action Text -->
+    <TextView
+        android:id="@+id/video_gallery_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/browse_video"
+        android:textColor="@android:color/black"
+        android:textSize="@dimen/xsm_size"
+        android:textStyle="normal|italic"
+        app:layout_constraintEnd_toEndOf="@+id/browse_video"
+        app:layout_constraintStart_toStartOf="@+id/browse_video"
+        app:layout_constraintTop_toBottomOf="@+id/browse_video"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

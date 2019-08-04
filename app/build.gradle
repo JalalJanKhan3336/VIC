@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.0"
+    buildToolsVersion "29.0.1"
     defaultConfig {
         applicationId "com.example.vic"
         minSdkVersion 19
@@ -17,6 +17,14 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    android {
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+    }
+
 }
 
 dependencies {
@@ -33,9 +41,6 @@ dependencies {
 
     // Dexter Dependency
     implementation 'com.karumi:dexter:5.0.0'
-
-    // Media Picker Dependency
-    implementation 'net.alhazmy13.MediaPicker:libary:2.4.4'
 
     // Sili Compressor to Compress Media File
     implementation 'com.iceteck.silicompressorr:silicompressor:2.2.2'

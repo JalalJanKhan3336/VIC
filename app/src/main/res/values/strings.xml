@@ -10,4 +10,12 @@
     <string name="wanna_delete">Do you want to DELETE this file?</string>
     <string name="cancel">Cancel</string>
     <string name="delete_txt">Delete</string>
+    <string name="choose_action">Choose an Action</string>
+    <string name="capture_image">Capture Image</string>
+    <string name="browse_image">Browse Image</string>
+    <string name="capture_video">Capture Video</string>
+    <string name="browse_video">Browse Video</string>
+    <string name="compress_file">Compress File</string>
+    <string name="compress_info">Below is the properties of uncompressed file. To reduce file size, click on \"Compress\" button. Click on \"Cancel\" button to Dismiss compression dialog.</string>
+    <string name="compress">Compress</string>
 </resources>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/norm_margin"
+    android:minWidth="300dp"
+    android:background="@android:color/white"
+    android:padding="@dimen/norm_pad"
+    tools:context=".Dialog.CompressorDialogFragment">
+
+    <!-- Compress Title Text Label -->
+    <TextView
+        android:id="@+id/compress_title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/compress_file"
+        android:textColor="@android:color/black"
+        android:textSize="@dimen/norm_size"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Compression Info Text -->
+    <TextView
+        android:id="@+id/compress_info_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/sm_margin"
+        android:text="@string/compress_info"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="@dimen/sm_size"
+        android:textStyle="normal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/compress_title_tv"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Image Holder -->
+    <ImageView
+        android:id="@+id/image_holder"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="@dimen/norm_margin"
+        android:background="@drawable/rounded_rect_bg"
+        android:contentDescription="@string/logo"
+        android:maxHeight="300dp"
+        android:minHeight="200dp"
+        android:padding="@dimen/sm_pad"
+        android:scaleType="fitCenter"
+        android:src="@drawable/vic_logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/compress_info_tv"
+        app:layout_constraintBottom_toTopOf="@+id/separator"/>
+
+    <!-- Video Holder -->
+    <VideoView
+        android:id="@+id/video_holder"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="@dimen/norm_margin"
+        android:background="@drawable/rounded_rect_bg"
+        android:contentDescription="@string/logo"
+        android:maxHeight="300dp"
+        android:minHeight="200dp"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/compress_info_tv"
+        app:layout_constraintBottom_toTopOf="@+id/separator"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/separator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="310dp" />
+
+    <!-- File Properties Holder -->
+    <TextView
+        android:id="@+id/file_properties_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/sm_margin"
+        android:text="@string/compress_info"
+        android:textColor="@android:color/darker_gray"
+        android:textSize="@dimen/sm_size"
+        android:textStyle="normal"
+        android:maxLines="3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/separator"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Cancel Button -->
+    <Button
+        android:id="@+id/cancel_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_trans_bg"
+        android:text="@string/cancel"
+        android:textAllCaps="false"
+        android:layout_marginTop="@dimen/sm_margin"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/compress_btn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/file_properties_tv" />
+
+    <!-- Compress Button -->
+    <Button
+        android:id="@+id/compress_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_bg"
+        android:text="@string/compress"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/cancel_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/cancel_btn"
+        app:layout_constraintTop_toTopOf="@+id/cancel_btn" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

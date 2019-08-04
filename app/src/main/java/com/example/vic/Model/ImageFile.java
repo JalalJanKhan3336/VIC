@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 public class ImageFile implements Serializable {
 
-    private String mImagePath, mImageName, mImageSizeInMB, mImageType;
+    private String mImageName, mImageType, mImageSizeInMB, mImagePath;
     private String mImageCompressionDate, mImageCompressionTime;
     private Uri mImageUri;
 

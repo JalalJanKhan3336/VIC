@@ -106,7 +106,6 @@ public class DeleteItemDialogFragment extends DialogFragment {
             }
         });
 
-
-
     }
+
 }
