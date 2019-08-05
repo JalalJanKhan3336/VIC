@@ -22,4 +22,7 @@
     <dimen name="lg_size">24sp</dimen>
     <dimen name="xlg_size">36sp</dimen>
 
+
+    <dimen name="grid_expected_size">120dp</dimen>
+
 </resources>

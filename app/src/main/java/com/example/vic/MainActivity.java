@@ -1,6 +1,7 @@
 package com.example.vic;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -8,32 +9,46 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.EditText;
 
 import com.example.vic.Adapters.ImageFileAdapter;
 import com.example.vic.Adapters.VideoFileAdapter;
 import com.example.vic.Common.Constant;
 import com.example.vic.Dialog.ChooseActionFragment;
+import com.example.vic.Dialog.CompressorDialogFragment;
 import com.example.vic.Dialog.DeleteItemDialogFragment;
+import com.example.vic.Engine.JJKGlide4Engine;
+import com.example.vic.Listener.CompressorListener;
 import com.example.vic.Manager.BitmapManager;
 import com.example.vic.Listener.ChooseActionListener;
 import com.example.vic.Listener.DialogClickListener;
 import com.example.vic.Listener.ItemClickListener;
+import com.example.vic.Manager.PermissionManager;
 import com.example.vic.Model.ImageFile;
 import com.example.vic.Model.VideoFile;
 import com.example.vic.Utils.MessageUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.zhihu.matisse.Matisse;
+import com.zhihu.matisse.MimeType;
 
+import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements ItemClickListener, DialogClickListener,
-                   ChooseActionListener {
+                   ChooseActionListener, PermissionManager.AllPermissionsGrantedListener, CompressorListener {
 
     private static final int CAPTURE_IMAGE_CODE = 1;
     private static final int BROWSE_IMAGE_CODE  = 2;
@@ -51,14 +66,16 @@ public class MainActivity extends AppCompatActivity
     private ImageFileAdapter mImageFileAdapter;
     private VideoFileAdapter mVideoFileAdapter;
     private BitmapManager mBitmapManager;
+    private PermissionManager mPermissionManager;
+    private CompressorDialogFragment mCompressorDialogFragment;
 
     // Fragment References
     private DeleteItemDialogFragment mDeleteDialogFragment;
     private ChooseActionFragment mChooseActionFragment;
 
     // Local References
-    private String mCompressedSavedImagePath;
-    private String mCompressedSavedVideoPath;
+    private String mCompressedSavedImagePath, mSelectedImagePath;
+    private String mCompressedSavedVideoPath, mSelectedVideoPath;
     private List<String> mAllFilesPaths;
 
     @Override
@@ -71,6 +88,8 @@ public class MainActivity extends AppCompatActivity
         clickOnButton();
         setUpToolbar();
         populateList();
+
+        mPermissionManager.askPermissions();
     }
 
     // End Point: Initialize Views
@@ -89,6 +108,12 @@ public class MainActivity extends AppCompatActivity
         mDeleteDialogFragment = DeleteItemDialogFragment.getInstance();
         mDeleteDialogFragment.setDialogClickListener(this);
 
+        mCompressorDialogFragment = CompressorDialogFragment.getInstance();
+        mCompressorDialogFragment.setCompressorListener(this);
+
+        mPermissionManager = PermissionManager.getInstance(this);
+        mPermissionManager.setListener(this);
+
         mChooseActionFragment = ChooseActionFragment.with();
         mChooseActionFragment.setChooseActionListener(this);
 
@@ -96,12 +121,7 @@ public class MainActivity extends AppCompatActivity
 
     // End Point: Trigger Action when FAB is clicked
     private void clickOnButton() {
-        mNewCompressionFAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mChooseActionFragment.show(getSupportFragmentManager(), mChooseActionFragment.getTag());
-            }
-        });
+        mNewCompressionFAB.setOnClickListener(view -> mChooseActionFragment.show(getSupportFragmentManager(), mChooseActionFragment.getTag()));
 
     }
 
@@ -278,7 +298,15 @@ public class MainActivity extends AppCompatActivity
 
     // End Point: Browse single Image
     private void browseImage() {
-
+        Matisse.from(this)
+                .choose(MimeType.ofImage())
+                .countable(true)
+                .maxSelectable(1)
+                .gridExpectedSize(getResources().getDimensionPixelSize(R.dimen.grid_expected_size))
+                .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+                .thumbnailScale(0.85f)
+                .imageEngine(new JJKGlide4Engine())
+                .forResult(BROWSE_IMAGE_CODE);
     }
 
     // End Point: Capture single Video
@@ -291,7 +319,15 @@ public class MainActivity extends AppCompatActivity
 
     // End Point: Browse single Video
     private void browseVideo() {
-
+        Matisse.from(this)
+                .choose(MimeType.ofVideo())
+                .countable(true)
+                .maxSelectable(1)
+                .gridExpectedSize(getResources().getDimensionPixelSize(R.dimen.grid_expected_size))
+                .restrictOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+                .thumbnailScale(0.85f)
+                .imageEngine(new JJKGlide4Engine())
+                .forResult(BROWSE_VIDEO_CODE);
     }
 
     @Override
@@ -304,16 +340,31 @@ public class MainActivity extends AppCompatActivity
                 if(requestCode == CAPTURE_IMAGE_CODE){
                     Uri uri = data.getData();
 
+                    if (uri != null) {
+                        mSelectedImagePath = uri.toString();
+                        workWithImage(mSelectedImagePath);
+                    }
 
                 } else if(requestCode == BROWSE_IMAGE_CODE){
-                    Uri uri = data.getData();
+                    List<String> paths = Matisse.obtainPathResult(data);
+
+                    mSelectedImagePath = paths.get(0);
+                    workWithImage(mSelectedImagePath);
 
                 } else if(requestCode == CAPTURE_VIDEO_CODE){
-                    Uri uri = data.getData();
+                    List<String> paths = Matisse.obtainPathResult(data);
+
+                    mSelectedVideoPath = paths.get(0);
+
+                    workWithVideo(mSelectedVideoPath);
 
                 } else if(requestCode == BROWSE_VIDEO_CODE){
                     Uri uri = data.getData();
 
+                    if (uri != null) {
+                        mSelectedVideoPath = uri.toString();
+                        workWithVideo(mSelectedVideoPath);
+                    }
                 }
             }
 
@@ -321,5 +372,120 @@ public class MainActivity extends AppCompatActivity
             MessageUtils.displayToast(MainActivity.this, "Request is Cancelled");
         }
 
+    }
+
+    // End Point: Working with Selected image via path
+    private void workWithImage(String imagePath) {
+        ImageFile imageFile = mBitmapManager.extractImageDetails(imagePath);
+        showCompressorDialog(true, Constant.IMAGE, imageFile);
+    }
+
+    // End Point: Working with Selected video via path
+    private void workWithVideo(String videoPath) {
+        VideoFile videoFile = mBitmapManager.extractVideoDetails(videoPath);
+        showCompressorDialog(false, Constant.VIDEO, videoFile);
+    }
+
+    // End Point: Sending Compressor Dialog a Bundle & Show it
+    private void showCompressorDialog(boolean isImage, String key, Object obj) {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(Constant.IS_IMAGE, isImage);
+        bundle.putSerializable(key, (Serializable) obj);
+        mCompressorDialogFragment.setArguments(bundle);
+        mCompressorDialogFragment.show(getSupportFragmentManager(),
+                mCompressorDialogFragment.getTag());
+    }
+
+    // End Point: Extract Image Properties by it's path
+    private void discoverImageProperties(String imagePath) {
+        String fileName = mBitmapManager.getFileName(imagePath);
+        String filePath = mBitmapManager.getFileAbsPath(imagePath);
+        String extension = mBitmapManager.getFileExtension(imagePath);
+        String sizeInMB = mBitmapManager.getFileSize(imagePath);
+        Uri fileUri = Uri.parse(imagePath);
+
+        ImageFile imageFile = new ImageFile();
+
+    }
+
+    // End Point: Extract Video Properties by it's path
+    private void discoverVideoProperties(String videoPath) {
+        String fileName = mBitmapManager.getFileName(videoPath);
+        String filePath = mBitmapManager.getFileAbsPath(videoPath);
+        String extension = mBitmapManager.getFileExtension(videoPath);
+        String sizeInMB = mBitmapManager.getFileSize(videoPath);
+        Uri fileUri = Uri.parse(videoPath);
+
+    }
+
+    @Override
+    public void allGranted(boolean yesAllGranted) {
+        if(!yesAllGranted)
+            mPermissionManager.askPermissions();
+    }
+
+    @Override
+    public void onFileCompressed(String fileType, Object file) {
+        if(fileType != null && file != null){
+            if(fileType.equals(Constant.IMAGE)){
+                askName(true, file);
+            }
+            if(fileType.equals(Constant.VIDEO)){
+                VideoFile videoFile = (VideoFile) file;
+                mVideoFileList.add(videoFile);
+            }
+        }
+    }
+
+    // End Point: Show dialog box to rename your file
+    private void askName(boolean isImage, Object file) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle(getString(R.string.file_name));
+        builder.setMessage(getString(R.string.file_name_msg));
+
+        EditText field = new EditText(this);
+
+        builder.setView(field);
+
+        builder.setPositiveButton("Save", (dialogInterface, i) -> {
+            if(!TextUtils.isEmpty(field.getText().toString().trim())){
+                if(isImage){
+                    String name = field.getText().toString().trim();
+
+                    ImageFile imageFile = (ImageFile) file;
+                    Bitmap image = BitmapFactory.decodeFile(imageFile.getmImagePath());
+                    String fileNewPath = mBitmapManager.saveFile(image, name+".jpg");
+
+                    if(fileNewPath != null){
+                        MessageUtils.displaySnackbar(mRecyclerView,"Image "+name+" is saved successfully");
+                        imageFile.setmImagePath(fileNewPath);
+                    }
+
+                }else {
+                    String name = field.getText().toString().trim();
+
+                    VideoFile videoFile = (VideoFile) file;
+                    String fileNewPath = mBitmapManager.saveFile(MainActivity.this, videoFile.getmVideoUri(), name+".mp4");
+
+                    if(fileNewPath != null){
+                        MessageUtils.displaySnackbar(mRecyclerView,"Video "+name+" is saved successfully");
+                        videoFile.setmVideoPath(fileNewPath);
+                    }
+
+                }
+
+                dialogInterface.dismiss();
+                populateList();
+
+            }else {
+                field.setError("Name your file first");
+            }
+        });
+
+        builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }

@@ -2,6 +2,7 @@ package com.example.vic.Manager;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
@@ -9,12 +10,15 @@ import android.util.Log;
 
 import com.example.vic.Model.ImageFile;
 import com.example.vic.Model.VideoFile;
+import com.example.vic.Utils.MessageUtils;
 import com.iceteck.silicompressorr.SiliCompressor;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +58,7 @@ public class BitmapManager {
             VIDEO_FOLDER.mkdir();
     }
 
+    // End Point: Saving Image into Storage
     public String saveFile(Bitmap image, String imageName){
         File imageFile = new File(IMAGE_FOLDER, imageName);
 
@@ -72,6 +77,45 @@ public class BitmapManager {
         }
 
         return imageFile.getAbsolutePath();
+    }
+
+    // End Point: Saving Video into Storage
+    public String saveFile(Context context, Uri videoUri, String videoName){
+
+        try {
+            AssetFileDescriptor videoAsset = context.getContentResolver().openAssetFileDescriptor(videoUri, "r");
+
+            if (videoAsset != null) {
+                FileInputStream fin = videoAsset.createInputStream();
+
+                File videoFile = new File(VIDEO_FOLDER, videoName);
+
+                if(videoFile.exists())
+                    videoFile.delete();
+
+                OutputStream out = new FileOutputStream(videoFile);
+
+                // Copy the bits from instream to outstream
+                byte[] buf = new byte[1024];
+                int len;
+
+                while ((len = fin.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+
+                fin.close();
+                out.close();
+
+                return videoFile.getAbsolutePath();
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     public boolean deleteThisFile(String filePath){
@@ -172,15 +216,36 @@ public class BitmapManager {
         // Extract File Properties
         File file = new File(newPath);
 
-        String fileName = file.getName();
-        String filePath = file.getAbsolutePath();
-        String extension = filePath.substring(filePath.lastIndexOf("."));
+        String fileName = getFileName(newPath);
+        String filePath = getFileAbsPath(newPath);
+        String extension = getFileExtension(newPath);
+        String sizeInMB = getFileSize(newPath);
         Uri fileUri = Uri.fromFile(file);
+
+        return new ImageFile(filePath, fileName, sizeInMB, extension, fileUri);
+    }
+
+    public String getFileName(String filePath) {
+        File file = new File(filePath);
+        return file.getName();
+    }
+
+    public String getFileAbsPath(String filePath) {
+        File file = new File(filePath);
+        return file.getAbsolutePath();
+    }
+
+    public String getFileExtension(String filePath) {
+        return filePath.substring(filePath.lastIndexOf("."));
+    }
+
+    public String getFileSize(String filePath) {
+        File file = new File(filePath);
 
         long sizeInKB = file.length() / 1024;
         long sizeInMB = sizeInKB / 1024;
 
-        return new ImageFile(filePath, fileName, String.valueOf(sizeInMB), extension, fileUri);
+        return String.valueOf(sizeInMB);
     }
 
     // End Point: Extract Video Details
@@ -189,15 +254,13 @@ public class BitmapManager {
         // Extract File Properties
         File file = new File(newPath);
 
-        String fileName = file.getName();
-        String filePath = file.getAbsolutePath();
-        String extension = filePath.substring(filePath.lastIndexOf("."));
+        String fileName = getFileName(newPath);
+        String filePath = getFileAbsPath(newPath);
+        String extension = getFileExtension(newPath);
+        String sizeInMB = getFileSize(newPath);
         Uri fileUri = Uri.fromFile(file);
 
-        long sizeInKB = file.length() / 1024;
-        long sizeInMB = sizeInKB / 1024;
-
-        return new VideoFile(filePath, fileName, String.valueOf(sizeInMB), extension, fileUri);
+        return new VideoFile(filePath, fileName, sizeInMB, extension, fileUri);
     }
 
     private boolean isSDCardSupported(){
