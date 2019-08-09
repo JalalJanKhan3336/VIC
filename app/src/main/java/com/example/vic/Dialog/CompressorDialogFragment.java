@@ -1,6 +1,5 @@
 package com.example.vic.Dialog;
 
-
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 
@@ -14,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.VideoView;
 
@@ -21,9 +21,11 @@ import com.example.vic.Common.Constant;
 import com.example.vic.Manager.BitmapManager;
 import com.example.vic.Listener.CompressorListener;
 import com.example.vic.Model.ImageFile;
+import com.example.vic.Model.MediaFiles;
 import com.example.vic.Model.VideoFile;
 import com.example.vic.R;
 import com.example.vic.Utils.GlideUtils;
+import com.example.vic.Utils.MessageUtils;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -50,7 +52,7 @@ public class CompressorDialogFragment extends DialogFragment {
     private Button mCancelButton, mCompressButton;
     private ImageView mImageHolder;
     private VideoView mVideoHolder;
-    private TextView mFilePropertiesHolder;
+    private TextView mTitleHolder, mSizeHolder, mTypeHolder, mPathHolder;
 
     // Custom References
     private ImageFile mImageFile;
@@ -82,44 +84,48 @@ public class CompressorDialogFragment extends DialogFragment {
 
             if(mIsImage){
                 mImageFile = (ImageFile) getArguments().getSerializable(Constant.IMAGE);
-                populateFields(mImageFile, mIsImage);
+                populateFields(mImageFile, true);
             }else {
                 mVideoFile = (VideoFile) getArguments().getSerializable(Constant.VIDEO);
+                populateFields(mVideoFile, false);
             }
         }
 
     }
 
-    private void populateFields(Object file, boolean isImage) {
+    @SuppressLint({"SetTextI18n", "DefaultLocale"})
+    private void populateFields(MediaFiles file, boolean isImage) {
         if(isImage){
-            ImageFile imageFile = (ImageFile) file;
 
+            mImageHolder.setVisibility(View.VISIBLE);
             mVideoHolder.setVisibility(View.GONE);
-            GlideUtils.loadImageAsBitmap(getContext(), imageFile.getmImagePath(), mImageHolder);
 
-            StringBuilder builder = new StringBuilder();
+            GlideUtils.loadImageAsBitmap(getContext(), file.getmFilePath(), mImageHolder);
 
-            builder.append(Constant.TITLE + imageFile.getmImageName());
-            builder.append(Constant.SIZE + imageFile.getmImageSizeInMB());
-            builder.append(Constant.FILE_TYPE + imageFile.getmImageType());
-            builder.append(Constant.PATH + imageFile.getmImagePath());
-
-            mFilePropertiesHolder.setText(builder);
         }else {
 
-            VideoFile videoFile = (VideoFile) file;
+            mImageHolder.setVisibility(View.GONE);
+            mVideoHolder.setVisibility(View.VISIBLE);
 
-            mVideoHolder.setVideoPath(videoFile.getmVideoPath());
+            mVideoHolder.setVideoURI(file.getmFileUri());
 
-            StringBuilder builder = new StringBuilder();
-
-            builder.append(Constant.TITLE + videoFile.getmVideoName());
-            builder.append(Constant.SIZE + videoFile.getmVideoSizeInMB());
-            builder.append(Constant.FILE_TYPE + videoFile.getmVideoType());
-            builder.append(Constant.PATH + videoFile.getmVideoPath());
-
-            mFilePropertiesHolder.setText(builder);
+            setUpMediaController();
         }
+
+
+        mTitleHolder.setText(file.getmFileName());
+        mSizeHolder.setText(String.format("%.3f",file.getmFileSizeInMB())+Constant.MB);
+        mTypeHolder.setText(file.getmFileType());
+        mPathHolder.setText(file.getmFilePath());
+    }
+
+    // End Point: Applying Controls on selected video
+    private void setUpMediaController() {
+        MediaController mc = new MediaController(getContext());
+        mc.setSaveEnabled(true);
+        mc.setFocusable(true);
+        mVideoHolder.setMediaController(mc);
+        mc.setAnchorView(mVideoHolder);
     }
 
     // End Point: Initialize Views
@@ -128,34 +134,32 @@ public class CompressorDialogFragment extends DialogFragment {
         mVideoHolder = view.findViewById(R.id.video_holder);
         mImageHolder = view.findViewById(R.id.image_holder);
         mCompressButton = view.findViewById(R.id.compress_btn);
-        mFilePropertiesHolder = view.findViewById(R.id.file_properties_tv);
+        mTitleHolder = view.findViewById(R.id.title_holder);
+        mSizeHolder = view.findViewById(R.id.size_holder);
+        mTypeHolder = view.findViewById(R.id.type_holder);
+        mPathHolder = view.findViewById(R.id.path_holder);
     }
 
     // End Point: Trigger Action when a view is clicked
     private void clickOnView() {
-        mCompressButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mIsImage){
-                    mImageFile = (ImageFile) BitmapManager.with(getContext()).compress(true, mImageFile.getmImagePath());
-                    mCompressorListener.onFileCompressed(Constant.IMAGE, mImageFile);
-                }
-                else {
-                    mVideoFile = (VideoFile) BitmapManager.with(getContext()).compress(false, mVideoFile.getmVideoPath());
-                    mCompressorListener.onFileCompressed(Constant.VIDEO, mVideoFile);
-                }
+        mCompressButton.setOnClickListener(view -> {
+            if (mIsImage){
+                mImageFile = (ImageFile) BitmapManager.with(getContext()).compress(true, mImageFile.getmFilePath());
+                mCompressorListener.onFileCompressed(Constant.IMAGE, mImageFile);
             }
+            else {
+                mVideoFile = (VideoFile) BitmapManager.with(getContext()).compress(false, mVideoFile.getmFilePath());
+                mCompressorListener.onFileCompressed(Constant.VIDEO, mVideoFile);
+            }
+
+            dismiss();
         });
 
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mCompressorListener.onFileCompressed(null, null);
-                dismiss();
-            }
+        mCancelButton.setOnClickListener(view -> {
+            mCompressorListener.onFileCompressed(null, null);
+            dismiss();
         });
 
     }
-
 
 }

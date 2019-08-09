@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/norm_margin"
     android:minWidth="300dp"
     android:background="@android:color/white"
     android:padding="@dimen/norm_pad"
@@ -46,6 +45,7 @@
         android:background="@drawable/rounded_rect_bg"
         android:contentDescription="@string/logo"
         android:maxHeight="300dp"
+        android:minWidth="300dp"
         android:minHeight="200dp"
         android:padding="@dimen/sm_pad"
         android:scaleType="fitCenter"
@@ -59,6 +59,7 @@
     <VideoView
         android:id="@+id/video_holder"
         android:layout_width="match_parent"
+        android:minWidth="300dp"
         android:layout_height="200dp"
         android:layout_marginTop="@dimen/norm_margin"
         android:background="@drawable/rounded_rect_bg"
@@ -79,20 +80,123 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_begin="310dp" />
 
-    <!-- File Properties Holder -->
-    <TextView
-        android:id="@+id/file_properties_tv"
-        android:layout_width="wrap_content"
+    <!-- File Properties -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/rel_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/sm_margin"
-        android:text="@string/compress_info"
-        android:textColor="@android:color/darker_gray"
-        android:textSize="@dimen/sm_size"
-        android:textStyle="normal"
-        android:maxLines="3"
+        android:padding="@dimen/sm_pad"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/separator"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintBottom_toTopOf="@+id/cancel_btn">
+
+        <!-- Title Label -->
+        <TextView
+            android:id="@+id/title_label_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/rel_layout"
+            app:layout_constraintTop_toTopOf="@+id/rel_layout"/>
+
+        <!-- Title Holder -->
+        <TextView
+            android:id="@+id/title_holder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/title"
+            android:textAlignment="center"
+            android:layout_marginStart="@dimen/norm_margin"
+            android:textSize="@dimen/sm_size"
+            android:textColor="@android:color/darker_gray"
+            android:textStyle="normal|italic"
+            app:layout_constraintTop_toTopOf="@+id/title_label_tv"
+            app:layout_constraintBottom_toBottomOf="@+id/title_label_tv"
+            app:layout_constraintStart_toEndOf="@+id/title_label_tv" />
+
+        <!-- Size Label -->
+        <TextView
+            android:id="@+id/size_label_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/size"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/title_label_tv"
+            app:layout_constraintTop_toBottomOf="@+id/title_label_tv" />
+
+        <!-- Size Holder -->
+        <TextView
+            android:id="@+id/size_holder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/size"
+            android:textAlignment="center"
+            android:textSize="@dimen/sm_size"
+            android:textColor="@android:color/darker_gray"
+            android:textStyle="normal|italic"
+            app:layout_constraintTop_toTopOf="@+id/size_label_tv"
+            app:layout_constraintBottom_toBottomOf="@+id/size_label_tv"
+            app:layout_constraintStart_toStartOf="@+id/title_holder"/>
+
+        <!-- Type Label -->
+        <TextView
+            android:id="@+id/type_label_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/type"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/size_label_tv"
+            app:layout_constraintTop_toBottomOf="@+id/size_label_tv"/>
+
+        <!-- Type Holder -->
+        <TextView
+            android:id="@+id/type_holder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/type"
+            android:textAlignment="center"
+            android:textSize="@dimen/sm_size"
+            android:textColor="@android:color/darker_gray"
+            android:textStyle="normal|italic"
+            app:layout_constraintTop_toTopOf="@+id/type_label_tv"
+            app:layout_constraintBottom_toBottomOf="@+id/type_label_tv"
+            app:layout_constraintStart_toStartOf="@+id/size_holder"/>
+
+        <!-- Path Label -->
+        <TextView
+            android:id="@+id/path_label_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/path"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/type_label_tv"
+            app:layout_constraintTop_toBottomOf="@+id/type_label_tv" />
+
+        <!-- Path Holder -->
+        <TextView
+            android:id="@+id/path_holder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/path"
+            android:textAlignment="center"
+            android:textSize="@dimen/sm_size"
+            android:textColor="@android:color/darker_gray"
+            android:textStyle="normal|italic"
+            app:layout_constraintTop_toTopOf="@+id/path_label_tv"
+            app:layout_constraintBottom_toBottomOf="@+id/path_label_tv"
+            app:layout_constraintStart_toStartOf="@+id/type_holder"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Cancel Button -->
     <Button
@@ -106,7 +210,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/compress_btn"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/file_properties_tv" />
+        app:layout_constraintTop_toBottomOf="@+id/rel_layout" />
 
     <!-- Compress Button -->
     <Button

@@ -16,6 +16,7 @@ import android.widget.Button;
 import com.example.vic.Common.Constant;
 import com.example.vic.Listener.DialogClickListener;
 import com.example.vic.Model.ImageFile;
+import com.example.vic.Model.MediaFiles;
 import com.example.vic.Model.VideoFile;
 import com.example.vic.R;
 
@@ -42,8 +43,9 @@ public class DeleteItemDialogFragment extends DialogFragment {
     private Button mCancelButton, mDeleteButton;
 
     // Custom References
-    private ImageFile mImageFile;
-    private VideoFile mVideoFile;
+    private MediaFiles mMediaFile;
+    private ImageFile  mImageFile;
+    private VideoFile  mVideoFile;
 
     // Local Var
     private boolean mIsImage = true;
@@ -67,13 +69,15 @@ public class DeleteItemDialogFragment extends DialogFragment {
         clickOnView();
 
         if(getArguments() != null){
-            mIsImage = getArguments().getBoolean(Constant.IS_IMAGE);
+            //mIsImage = getArguments().getBoolean(Constant.IS_IMAGE);
 
-            if(mIsImage){
-                mImageFile = (ImageFile) getArguments().getSerializable(Constant.IMAGE);
-            }else {
-                mVideoFile = (VideoFile) getArguments().getSerializable(Constant.VIDEO);
-            }
+            mMediaFile = (MediaFiles) getArguments().getSerializable(Constant.MEDIA_FILE);
+
+//            if(mIsImage){
+//                mImageFile = (ImageFile) getArguments().getSerializable(Constant.IMAGE);
+//            }else {
+//                mVideoFile = (VideoFile) getArguments().getSerializable(Constant.VIDEO);
+//            }
         }
 
     }
@@ -89,11 +93,7 @@ public class DeleteItemDialogFragment extends DialogFragment {
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mIsImage)
-                    mDialogClickListener.onButtonClicked(Constant.DELETE_BUTTON, Constant.IMAGE, mImageFile);
-                else
-                    mDialogClickListener.onButtonClicked(Constant.DELETE_BUTTON, Constant.VIDEO, mVideoFile);
-
+                mDialogClickListener.onButtonClicked(Constant.DELETE_BUTTON, mMediaFile);
                 dismiss();
             }
         });
@@ -101,7 +101,7 @@ public class DeleteItemDialogFragment extends DialogFragment {
         mCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mDialogClickListener.onButtonClicked(Constant.CANCEL_BUTTON, null, null);
+                mDialogClickListener.onButtonClicked(Constant.CANCEL_BUTTON, null);
                 dismiss();
             }
         });

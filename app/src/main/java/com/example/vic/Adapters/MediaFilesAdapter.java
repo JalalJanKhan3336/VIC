@@ -14,15 +14,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.vic.Common.Constant;
 import com.example.vic.Listener.ItemClickListener;
 import com.example.vic.Model.ImageFile;
+import com.example.vic.Model.MediaFiles;
 import com.example.vic.R;
 import com.example.vic.Utils.GlideUtils;
 
 import java.util.List;
 
-public class ImageFileAdapter extends RecyclerView.Adapter<ImageFileAdapter.ImageFileViewHolder> {
+public class MediaFilesAdapter extends RecyclerView.Adapter<MediaFilesAdapter.MediaFileViewHolder> {
+
 
     private Context mContext;
-    private List<ImageFile> mImageFilesList;
+    private List<MediaFiles> mMediaFilesList;
 
     // Interface Reference
     private ItemClickListener mMediaFileListener;
@@ -38,7 +40,7 @@ public class ImageFileAdapter extends RecyclerView.Adapter<ImageFileAdapter.Imag
 
                 @Override
                 public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                    ImageFile file = mImageFilesList.get(viewHolder.getAdapterPosition());
+                    MediaFiles file = mMediaFilesList.get(viewHolder.getAdapterPosition());
 
                     setDataToListener(file);
 
@@ -46,22 +48,23 @@ public class ImageFileAdapter extends RecyclerView.Adapter<ImageFileAdapter.Imag
                 }
             };
 
-    public ImageFileAdapter(Context mContext, List<ImageFile> mImageFilesList, ItemClickListener mMediaFileListener) {
+    public MediaFilesAdapter(Context mContext, List<MediaFiles> mMediaFilesList, ItemClickListener mMediaFileListener) {
         this.mContext = mContext;
-        this.mImageFilesList = mImageFilesList;
+        this.mMediaFilesList = mMediaFilesList;
         this.mMediaFileListener = mMediaFileListener;
+        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public ImageFileViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MediaFileViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(mContext).inflate(R.layout.media_file_item, parent, false);
-        return new ImageFileViewHolder(itemView);
+        return new MediaFileViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ImageFileViewHolder holder, int position) {
-        ImageFile obj = mImageFilesList.get(position);
+    public void onBindViewHolder(@NonNull MediaFileViewHolder holder, int position) {
+        MediaFiles obj = mMediaFilesList.get(position);
 
         GlideUtils.loadCircularImageAsBitmap(mContext, obj.getmFilePath(), holder.mThumbnailHolder);
 
@@ -81,18 +84,18 @@ public class ImageFileAdapter extends RecyclerView.Adapter<ImageFileAdapter.Imag
 
     @Override
     public int getItemCount() {
-        return mImageFilesList.size();
+        return mMediaFilesList.size();
     }
 
     // End Point: Trigger Action on RecyclerView item clicked, swipe
-    private void clickOnItem(ImageFileViewHolder holder, int position) {
-        final ImageFile obj = mImageFilesList.get(position);
+    private void clickOnItem(MediaFileViewHolder holder, int position) {
+        final MediaFiles obj = mMediaFilesList.get(position);
 
         // When an Item Clicked
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //mMediaFileListener.onItemClicked(Constant.IMAGE, obj);
+                mMediaFileListener.onItemClicked(obj);
             }
         });
 
@@ -100,25 +103,25 @@ public class ImageFileAdapter extends RecyclerView.Adapter<ImageFileAdapter.Imag
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                //mMediaFileListener.onItemLongClicked(Constant.IMAGE, obj);
+                mMediaFileListener.onItemLongClicked(obj);
                 return true;
             }
         });
 
     }
 
-    private void setDataToListener(ImageFile file) {
-        //mMediaFileListener.onItemSwiped(Constant.IMAGE, file, mSimpleCallback);
+    private void setDataToListener(MediaFiles file) {
+        mMediaFileListener.onItemSwiped(file, mSimpleCallback);
     }
 
-    public class ImageFileViewHolder extends RecyclerView.ViewHolder {
+    public class MediaFileViewHolder extends RecyclerView.ViewHolder {
 
         // Views
         private ImageView mThumbnailHolder;
         private TextView mTitleHolder, mSizeHolder, mTypeHolder,
-                         mPathHolder, mDateHolder, mTimeHolder;
+                mPathHolder, mDateHolder, mTimeHolder;
 
-        public ImageFileViewHolder(@NonNull View itemView) {
+        public MediaFileViewHolder(@NonNull View itemView) {
             super(itemView);
 
             mSizeHolder = itemView.findViewById(R.id.size_holder);

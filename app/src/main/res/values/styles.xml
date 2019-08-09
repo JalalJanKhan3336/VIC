@@ -9,19 +9,13 @@
     </style>
 
     <!-- Theme application theme. -->
-    <style name="AppTheme.ThemeOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+    <style name="AppTheme.ThemeOverlay" parent="ThemeOverlay.AppCompat.Light">
+
     </style>
 
     <!-- Popup Theme application theme. -->
-    <style name="AppTheme.PopupTheme" parent="ThemeOverlay.AppCompat.Light">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+    <style name="AppTheme.PopupTheme" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+
     </style>
 
 </resources>

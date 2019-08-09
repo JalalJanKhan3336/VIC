@@ -20,4 +20,8 @@
     <string name="file_name_msg">Rename your file to save it into your gallery.</string>
     <string name="compress_info">Below is the properties of uncompressed file. To reduce file size, click on \"Compress\" button. Click on \"Cancel\" button to Dismiss compression dialog.</string>
     <string name="compress">Compress</string>
+    <string name="title">Title:</string>
+    <string name="size">Size:</string>
+    <string name="type">Type:</string>
+    <string name="path">Path:</string>
 </resources>

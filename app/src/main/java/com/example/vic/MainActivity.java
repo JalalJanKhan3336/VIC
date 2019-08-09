@@ -22,6 +22,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.example.vic.Adapters.ImageFileAdapter;
+import com.example.vic.Adapters.MediaFilesAdapter;
 import com.example.vic.Adapters.VideoFileAdapter;
 import com.example.vic.Common.Constant;
 import com.example.vic.Dialog.ChooseActionFragment;
@@ -35,6 +36,7 @@ import com.example.vic.Listener.DialogClickListener;
 import com.example.vic.Listener.ItemClickListener;
 import com.example.vic.Manager.PermissionManager;
 import com.example.vic.Model.ImageFile;
+import com.example.vic.Model.MediaFiles;
 import com.example.vic.Model.VideoFile;
 import com.example.vic.Utils.MessageUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -48,8 +50,10 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements ItemClickListener, DialogClickListener,
-                   ChooseActionListener, PermissionManager.AllPermissionsGrantedListener, CompressorListener {
+                   ChooseActionListener, CompressorListener,
+                   PermissionManager.AllPermissionsGrantedListener{
 
+    // Final Var
     private static final int CAPTURE_IMAGE_CODE = 1;
     private static final int BROWSE_IMAGE_CODE  = 2;
     private static final int CAPTURE_VIDEO_CODE = 3;
@@ -61,13 +65,17 @@ public class MainActivity extends AppCompatActivity
     private FloatingActionButton mNewCompressionFAB;
 
     // Custom References
+    private List<MediaFiles> mMediaFileList;
     private List<ImageFile> mImageFileList;
     private List<VideoFile> mVideoFileList;
-    private ImageFileAdapter mImageFileAdapter;
-    private VideoFileAdapter mVideoFileAdapter;
     private BitmapManager mBitmapManager;
     private PermissionManager mPermissionManager;
     private CompressorDialogFragment mCompressorDialogFragment;
+
+    // Adapters Ref
+    private MediaFilesAdapter mMediaFilesAdapter;
+    private ImageFileAdapter mImageFileAdapter;
+    private VideoFileAdapter mVideoFileAdapter;
 
     // Fragment References
     private DeleteItemDialogFragment mDeleteDialogFragment;
@@ -81,13 +89,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.dummy_layout);
 
         initView();
         initRef();
         clickOnButton();
         setUpToolbar();
-        populateList();
 
         mPermissionManager.askPermissions();
     }
@@ -101,6 +108,7 @@ public class MainActivity extends AppCompatActivity
 
     // End Point: Initialize References
     private void initRef() {
+        mMediaFileList = new ArrayList<>();
         mImageFileList = new ArrayList<>();
         mVideoFileList = new ArrayList<>();
         mBitmapManager = BitmapManager.with(this);
@@ -116,13 +124,11 @@ public class MainActivity extends AppCompatActivity
 
         mChooseActionFragment = ChooseActionFragment.with();
         mChooseActionFragment.setChooseActionListener(this);
-
     }
 
     // End Point: Trigger Action when FAB is clicked
     private void clickOnButton() {
         mNewCompressionFAB.setOnClickListener(view -> mChooseActionFragment.show(getSupportFragmentManager(), mChooseActionFragment.getTag()));
-
     }
 
     // End Point: Setting up Toolbar
@@ -132,134 +138,107 @@ public class MainActivity extends AppCompatActivity
         if(getSupportActionBar() != null){
             getSupportActionBar().setTitle(getString(R.string.app_name));
         }
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        populateList();
     }
 
     // End Point: Populating List of Image & Video Files
     private void populateList() {
         List<String> imagesPath = mBitmapManager.getAllImages();
 
+        if(mMediaFileList != null)
+            mMediaFileList.clear();
+
         if(imagesPath != null){
+
             for(String path : imagesPath){
                 ImageFile file = mBitmapManager.extractImageDetails(path);
                 if(file != null){
-                    mImageFileList.add(file);
+                    mMediaFileList.add(file);
                 }
             }
 
-            populateRecyclerView(true);
         }
 
         List<String> videosPath = mBitmapManager.getAllVideos();
 
         if(videosPath != null){
+
             for(String path : videosPath){
                 VideoFile file = mBitmapManager.extractVideoDetails(path);
                 if(file != null){
-                    mVideoFileList.add(file);
+                    mMediaFileList.add(file);
                 }
             }
-
-            populateRecyclerView(false);
         }
 
+        populateRecyclerView();
     }
 
     // End Point: Populate RecyclerView
-    private void populateRecyclerView(boolean isImageLoader){
+    private void populateRecyclerView(){
 
-        if(isImageLoader){
-            if(mImageFileAdapter == null)
-                mImageFileAdapter = new ImageFileAdapter(this, mImageFileList, this);
+//        if(isImageLoader){
+//            if(mImageFileAdapter == null)
+//                mImageFileAdapter = new ImageFileAdapter(this, mImageFileList, this);
+//
+//            mRecyclerView.setAdapter(mImageFileAdapter);
+//        }else {
+//            if(mVideoFileAdapter == null)
+//                mVideoFileAdapter = new VideoFileAdapter(this, mVideoFileList, this);
+//
+//            mRecyclerView.setAdapter(mVideoFileAdapter);
+//        }
 
-            mRecyclerView.setAdapter(mImageFileAdapter);
-        }else {
-            if(mVideoFileAdapter == null)
-                mVideoFileAdapter = new VideoFileAdapter(this, mVideoFileList, this);
-
-            mRecyclerView.setAdapter(mVideoFileAdapter);
-        }
+        if(mMediaFilesAdapter == null)
+            mMediaFilesAdapter = new MediaFilesAdapter(this, mMediaFileList,this);
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setStackFromEnd(true);
-        llm.setReverseLayout(true);
+        llm.setReverseLayout(false);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(llm);
     }
 
     @Override
-    public void onItemClicked(String type, Object mediaFile) {
-        if(type.equals(Constant.IMAGE)){
-            ImageFile imageFile = (ImageFile) mediaFile;
+    public void onItemClicked(MediaFiles mediaFile) {
 
-        }else {
-            VideoFile videoFile = (VideoFile) mediaFile;
-        }
     }
 
     @Override
-    public void onItemLongClicked(String type, Object mediaFile) {
-        if(type.equals(Constant.IMAGE)){
-            ImageFile imageFile = (ImageFile) mediaFile;
+    public void onItemLongClicked(MediaFiles mediaFile) {
 
-        }else {
-            VideoFile videoFile = (VideoFile) mediaFile;
-        }
     }
 
     @Override
-    public void onItemSwiped(String type, Object mediaFile, ItemTouchHelper.SimpleCallback itemSwipedCallback) {
+    public void onItemSwiped(MediaFiles mediaFile, ItemTouchHelper.SimpleCallback itemSwipedCallback) {
         new ItemTouchHelper(itemSwipedCallback).attachToRecyclerView(mRecyclerView);
 
-        if(type.equals(Constant.IMAGE)){
-            ImageFile imageFile = (ImageFile) mediaFile;
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(Constant.MEDIA_FILE, mediaFile);
+        mDeleteDialogFragment.setArguments(bundle);
 
-            Bundle bundle = new Bundle();
-            bundle.putBoolean(Constant.IS_IMAGE, true);
-            bundle.putSerializable(Constant.IMAGE, imageFile);
-            mDeleteDialogFragment.setArguments(bundle);
-
-            mDeleteDialogFragment.show(getSupportFragmentManager(), mDeleteDialogFragment.getTag());
-        }else {
-            VideoFile videoFile = (VideoFile) mediaFile;
-
-            Bundle bundle = new Bundle();
-            bundle.putBoolean(Constant.IS_IMAGE, false);
-            bundle.putSerializable(Constant.VIDEO, videoFile);
-            mDeleteDialogFragment.setArguments(bundle);
-
-            mDeleteDialogFragment.show(getSupportFragmentManager(), mDeleteDialogFragment.getTag());
-        }
+        mDeleteDialogFragment.show(getSupportFragmentManager(), mDeleteDialogFragment.getTag());
     }
 
     @Override
-    public void onButtonClicked(String whichButton, String type, Object item) {
-        if(type != null && item != null){
+    public void onButtonClicked(String whichButton, MediaFiles item) {
+        if(item != null){
            if(whichButton.equals(Constant.DELETE_BUTTON)){
-               if(type.equals(Constant.IMAGE)){
-                   ImageFile file = (ImageFile) item;
 
-                   if(!mBitmapManager.deleteThisFile(file.getmImagePath())){
-                       MessageUtils.displaySnackbar(mRecyclerView,"Unable to delete the File");
-                   }else {
-                       MessageUtils.displaySnackbar(mRecyclerView,"File deleted successfully!");
-                       mImageFileList.remove(file);
-                       mImageFileAdapter.notifyDataSetChanged();
-                   }
-
+               if(!mBitmapManager.deleteThisFile(item.getmFilePath())){
+                   MessageUtils.displaySnackbar(mRecyclerView,"Unable to delete the File");
                }else {
-                   VideoFile file = (VideoFile) item;
-
-                   if(!mBitmapManager.deleteThisFile(file.getmVideoPath())){
-                       MessageUtils.displaySnackbar(mRecyclerView,"Unable to delete the File");
-                   }else {
-                       MessageUtils.displaySnackbar(mRecyclerView,"File deleted successfully!");
-                       mVideoFileList.remove(file);
-                       mVideoFileAdapter.notifyDataSetChanged();
-                   }
-
+                   MessageUtils.displaySnackbar(mRecyclerView,"File deleted successfully!");
+                   mMediaFileList.remove(item);
+                   mMediaFilesAdapter.notifyDataSetChanged();
                }
+
            }
         }
     }
@@ -352,19 +331,19 @@ public class MainActivity extends AppCompatActivity
                     workWithImage(mSelectedImagePath);
 
                 } else if(requestCode == CAPTURE_VIDEO_CODE){
-                    List<String> paths = Matisse.obtainPathResult(data);
-
-                    mSelectedVideoPath = paths.get(0);
-
-                    workWithVideo(mSelectedVideoPath);
-
-                } else if(requestCode == BROWSE_VIDEO_CODE){
                     Uri uri = data.getData();
 
                     if (uri != null) {
                         mSelectedVideoPath = uri.toString();
-                        workWithVideo(mSelectedVideoPath);
+                        workWithVideo(mSelectedVideoPath, uri);
                     }
+
+                } else if(requestCode == BROWSE_VIDEO_CODE){
+                    List<String> paths = Matisse.obtainPathResult(data);
+                    List<Uri> uris = Matisse.obtainResult(data);
+
+                    mSelectedVideoPath = paths.get(0);
+                    workWithVideo(mSelectedVideoPath, uris.get(0));
                 }
             }
 
@@ -381,8 +360,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     // End Point: Working with Selected video via path
-    private void workWithVideo(String videoPath) {
+    private void workWithVideo(String videoPath, Uri videoUri) {
         VideoFile videoFile = mBitmapManager.extractVideoDetails(videoPath);
+        videoFile.setmFileUri(videoUri);
         showCompressorDialog(false, Constant.VIDEO, videoFile);
     }
 
@@ -401,7 +381,7 @@ public class MainActivity extends AppCompatActivity
         String fileName = mBitmapManager.getFileName(imagePath);
         String filePath = mBitmapManager.getFileAbsPath(imagePath);
         String extension = mBitmapManager.getFileExtension(imagePath);
-        String sizeInMB = mBitmapManager.getFileSize(imagePath);
+        double sizeInMB = mBitmapManager.getFileSize(imagePath);
         Uri fileUri = Uri.parse(imagePath);
 
         ImageFile imageFile = new ImageFile();
@@ -413,7 +393,7 @@ public class MainActivity extends AppCompatActivity
         String fileName = mBitmapManager.getFileName(videoPath);
         String filePath = mBitmapManager.getFileAbsPath(videoPath);
         String extension = mBitmapManager.getFileExtension(videoPath);
-        String sizeInMB = mBitmapManager.getFileSize(videoPath);
+        double sizeInMB = mBitmapManager.getFileSize(videoPath);
         Uri fileUri = Uri.parse(videoPath);
 
     }
@@ -425,20 +405,19 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onFileCompressed(String fileType, Object file) {
+    public void onFileCompressed(String fileType, MediaFiles file) {
         if(fileType != null && file != null){
             if(fileType.equals(Constant.IMAGE)){
                 askName(true, file);
             }
             if(fileType.equals(Constant.VIDEO)){
-                VideoFile videoFile = (VideoFile) file;
-                mVideoFileList.add(videoFile);
+                askName(false, file);
             }
         }
     }
 
     // End Point: Show dialog box to rename your file
-    private void askName(boolean isImage, Object file) {
+    private void askName(boolean isImage, MediaFiles file) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setTitle(getString(R.string.file_name));
@@ -454,23 +433,25 @@ public class MainActivity extends AppCompatActivity
                     String name = field.getText().toString().trim();
 
                     ImageFile imageFile = (ImageFile) file;
-                    Bitmap image = BitmapFactory.decodeFile(imageFile.getmImagePath());
+                    Bitmap image = BitmapFactory.decodeFile(imageFile.getmFilePath());
                     String fileNewPath = mBitmapManager.saveFile(image, name+".jpg");
 
                     if(fileNewPath != null){
                         MessageUtils.displaySnackbar(mRecyclerView,"Image "+name+" is saved successfully");
-                        imageFile.setmImagePath(fileNewPath);
+                        mBitmapManager.deleteThisFile(imageFile.getmFilePath());
+                        imageFile.setmFilePath(fileNewPath);
                     }
 
                 }else {
                     String name = field.getText().toString().trim();
 
                     VideoFile videoFile = (VideoFile) file;
-                    String fileNewPath = mBitmapManager.saveFile(MainActivity.this, videoFile.getmVideoUri(), name+".mp4");
+                    mBitmapManager.deleteThisFile(videoFile.getmFilePath());
+                    String fileNewPath = mBitmapManager.saveFile(MainActivity.this, videoFile.getmFileUri(), name+".mp4");
 
                     if(fileNewPath != null){
                         MessageUtils.displaySnackbar(mRecyclerView,"Video "+name+" is saved successfully");
-                        videoFile.setmVideoPath(fileNewPath);
+                        videoFile.setmFilePath(fileNewPath);
                     }
 
                 }

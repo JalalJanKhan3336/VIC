@@ -20,8 +20,11 @@ public abstract class Constant {
     public static final String BROWSE_IMAGE = "Browse Image";
     public static final String BROWSE_VIDEO = "Browse Video";
 
+    public static final String MB = " MB";
+
     public static final String DELETE_BUTTON = "Delete";
     public static final String CANCEL_BUTTON = "Cancel";
 
     public static final String IS_IMAGE = "Is Image";
+    public static final String MEDIA_FILE = "Media File";
 }

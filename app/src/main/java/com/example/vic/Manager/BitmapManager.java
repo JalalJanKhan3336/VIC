@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 
@@ -40,7 +41,8 @@ public class BitmapManager {
     private final File VIC_FOLDER = new File(ROOT_DIR+"/VIC");
     private final File IMAGE_FOLDER = new File(VIC_FOLDER+"/Images");
     private final File VIDEO_FOLDER = new File(VIC_FOLDER+"/Videos");
-
+    private String mCompressedVideoPath = null;
+    private boolean isVideoCompressed = false;
 
     private BitmapManager(Context context){
         mContext = context;
@@ -181,8 +183,8 @@ public class BitmapManager {
 
         checkFolder();
 
-        if(IMAGE_FOLDER.isDirectory()){
-            videosPath = IMAGE_FOLDER.listFiles();
+        if(VIDEO_FOLDER.isDirectory()){
+            videosPath = VIDEO_FOLDER.listFiles();
 
             if(videosPath != null){
                 for (File videoPath : videosPath) {
@@ -200,13 +202,13 @@ public class BitmapManager {
             String newPath = SiliCompressor.with(mContext).compress(filePath, IMAGE_FOLDER);
             return extractImageDetails(newPath);
         }else {
-            String newPath = null;
-            try {
-                newPath = SiliCompressor.with(mContext).compressVideo(filePath,VIDEO_FOLDER.toString());
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-            return extractVideoDetails(newPath);
+
+            new VideoCompressor().execute(filePath);
+
+            if(isVideoCompressed)
+                return extractVideoDetails(mCompressedVideoPath);
+            else
+                return null;
         }
     }
 
@@ -219,7 +221,7 @@ public class BitmapManager {
         String fileName = getFileName(newPath);
         String filePath = getFileAbsPath(newPath);
         String extension = getFileExtension(newPath);
-        String sizeInMB = getFileSize(newPath);
+        double sizeInMB = getFileSize(newPath);
         Uri fileUri = Uri.fromFile(file);
 
         return new ImageFile(filePath, fileName, sizeInMB, extension, fileUri);
@@ -239,13 +241,12 @@ public class BitmapManager {
         return filePath.substring(filePath.lastIndexOf("."));
     }
 
-    public String getFileSize(String filePath) {
+    public double getFileSize(String filePath) {
         File file = new File(filePath);
 
         long sizeInKB = file.length() / 1024;
-        long sizeInMB = sizeInKB / 1024;
 
-        return String.valueOf(sizeInMB);
+        return (double) sizeInKB / 1024;
     }
 
     // End Point: Extract Video Details
@@ -257,7 +258,7 @@ public class BitmapManager {
         String fileName = getFileName(newPath);
         String filePath = getFileAbsPath(newPath);
         String extension = getFileExtension(newPath);
-        String sizeInMB = getFileSize(newPath);
+        double sizeInMB = getFileSize(newPath);
         Uri fileUri = Uri.fromFile(file);
 
         return new VideoFile(filePath, fileName, sizeInMB, extension, fileUri);
@@ -268,6 +269,33 @@ public class BitmapManager {
         Boolean isSDSupportedDevice = Environment.isExternalStorageRemovable();
 
         return isSDPresent && isSDSupportedDevice;
+    }
+
+    // Inner Async Class to Compress Video File
+    @SuppressLint("StaticFieldLeak")
+    private class VideoCompressor extends AsyncTask<String,Void,String>{
+
+        @Override
+        protected String doInBackground(String... paths) {
+            String newPath = null;
+            String filePath = paths[0];
+
+            try {
+                newPath = SiliCompressor.with(mContext).compressVideo(filePath,VIDEO_FOLDER.toString());
+                isVideoCompressed = true;
+            } catch (URISyntaxException e) {
+                isVideoCompressed = false;
+                e.printStackTrace();
+            }
+
+            return newPath;
+        }
+
+        @Override
+        protected void onPostExecute(String newPath) {
+            super.onPostExecute(newPath);
+            mCompressedVideoPath = newPath;
+        }
     }
 
 }

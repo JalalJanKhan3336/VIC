@@ -2,8 +2,10 @@ package com.example.vic.Listener;
 
 import androidx.recyclerview.widget.ItemTouchHelper;
 
+import com.example.vic.Model.MediaFiles;
+
 public interface ItemClickListener {
-    void onItemClicked(String type, Object mediaFile);
-    void onItemLongClicked(String type, Object mediaFile);
-    void onItemSwiped(String type, Object mediaFile, ItemTouchHelper.SimpleCallback itemSwipedCallback);
+    void onItemClicked(MediaFiles mediaFile);
+    void onItemLongClicked(MediaFiles mediaFile);
+    void onItemSwiped(MediaFiles mediaFile, ItemTouchHelper.SimpleCallback itemSwipedCallback);
 }

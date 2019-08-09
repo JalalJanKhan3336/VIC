@@ -60,18 +60,18 @@ public class VideoFileAdapter extends RecyclerView.Adapter<VideoFileAdapter.Vide
     public void onBindViewHolder(@NonNull VideoFileAdapter.VideoFileViewHolder holder, int position) {
         VideoFile obj = mVideoFilesList.get(position);
 
-        GlideUtils.loadCircularImageAsBitmap(mContext, obj.getmVideoPath(), holder.mThumbnailHolder);
+        GlideUtils.loadCircularImageAsBitmap(mContext, obj.getmFilePath(), holder.mThumbnailHolder);
 
-        String size = Constant.SIZE + obj.getmVideoSizeInMB();
-        String type = Constant.FILE_TYPE + obj.getmVideoType();
-        String path = Constant.PATH + obj.getmVideoPath();
+        String size = Constant.SIZE + obj.getmFileSizeInMB();
+        String type = Constant.FILE_TYPE + obj.getmFileType();
+        String path = Constant.PATH + obj.getmFilePath();
 
         holder.mSizeHolder.setText(size);
         holder.mTypeHolder.setText(type);
         holder.mPathHolder.setText(path);
-        holder.mTitleHolder.setText(obj.getmVideoName());
-        holder.mDateHolder.setText(obj.getmVideoCompressionDate());
-        holder.mTimeHolder.setText(obj.getmVideoCompressionTime());
+        holder.mTitleHolder.setText(obj.getmFileName());
+        holder.mDateHolder.setText(obj.getmFileCompressionDate());
+        holder.mTimeHolder.setText(obj.getmFileCompressionTime());
 
         clickOnItem(holder, position);
     }
@@ -84,7 +84,7 @@ public class VideoFileAdapter extends RecyclerView.Adapter<VideoFileAdapter.Vide
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mMediaFileListener.onItemClicked(Constant.VIDEO, obj);
+               // mMediaFileListener.onItemClicked(Constant.VIDEO, obj);
             }
         });
 
@@ -92,7 +92,7 @@ public class VideoFileAdapter extends RecyclerView.Adapter<VideoFileAdapter.Vide
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                mMediaFileListener.onItemLongClicked(Constant.VIDEO, obj);
+                //mMediaFileListener.onItemLongClicked(Constant.VIDEO, obj);
                 return true;
             }
         });
@@ -100,7 +100,7 @@ public class VideoFileAdapter extends RecyclerView.Adapter<VideoFileAdapter.Vide
     }
 
     private void setDataToListener(VideoFile file) {
-        mMediaFileListener.onItemSwiped(Constant.IMAGE, file, mSimpleCallback);
+        //mMediaFileListener.onItemSwiped(Constant.IMAGE, file, mSimpleCallback);
     }
 
 

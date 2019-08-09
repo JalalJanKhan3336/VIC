@@ -82,18 +82,22 @@ public class ChooseActionFragment extends BottomSheetDialogFragment implements V
         switch (id){
             case R.id.image_camera:{
                 mChooseActionListener.onActionChoosed(Constant.IMAGE_CAMERA);
+                dismiss();
                 break;
             }
             case R.id.video_camera:{
                 mChooseActionListener.onActionChoosed(Constant.VIDEO_CAMERA);
+                dismiss();
                 break;
             }
             case R.id.browse_image:{
                 mChooseActionListener.onActionChoosed(Constant.BROWSE_IMAGE);
+                dismiss();
                 break;
             }
             case R.id.browse_video:{
                 mChooseActionListener.onActionChoosed(Constant.BROWSE_VIDEO);
+                dismiss();
                 break;
             }
             default:
