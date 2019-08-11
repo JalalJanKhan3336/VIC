@@ -48,6 +48,9 @@ dependencies {
     // Media Picker Dependency
     implementation 'com.zhihu.android:matisse:0.5.2-beta5'
 
+    // Alhazmy Media Picker Dependency
+    implementation 'net.alhazmy13.MediaPicker:libary:2.4.4'
+
     // Glide Dependencies
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'

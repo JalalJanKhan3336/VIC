@@ -25,15 +25,6 @@ import com.example.vic.R;
  */
 public class DeleteItemDialogFragment extends DialogFragment {
 
-    private static DeleteItemDialogFragment mInstance;
-
-    public static DeleteItemDialogFragment getInstance(){
-        if(mInstance == null)
-            mInstance = new DeleteItemDialogFragment();
-
-        return mInstance;
-    }
-
     private DialogClickListener mDialogClickListener;
     public void setDialogClickListener(DialogClickListener listener){
         mDialogClickListener = listener;
@@ -44,11 +35,6 @@ public class DeleteItemDialogFragment extends DialogFragment {
 
     // Custom References
     private MediaFiles mMediaFile;
-    private ImageFile  mImageFile;
-    private VideoFile  mVideoFile;
-
-    // Local Var
-    private boolean mIsImage = true;
 
     public DeleteItemDialogFragment() {
         // Required empty public constructor
@@ -69,15 +55,7 @@ public class DeleteItemDialogFragment extends DialogFragment {
         clickOnView();
 
         if(getArguments() != null){
-            //mIsImage = getArguments().getBoolean(Constant.IS_IMAGE);
-
             mMediaFile = (MediaFiles) getArguments().getSerializable(Constant.MEDIA_FILE);
-
-//            if(mIsImage){
-//                mImageFile = (ImageFile) getArguments().getSerializable(Constant.IMAGE);
-//            }else {
-//                mVideoFile = (VideoFile) getArguments().getSerializable(Constant.VIDEO);
-//            }
         }
 
     }
@@ -90,20 +68,14 @@ public class DeleteItemDialogFragment extends DialogFragment {
 
     // End Point: Trigger Action when a view is clicked
     private void clickOnView() {
-        mDeleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mDialogClickListener.onButtonClicked(Constant.DELETE_BUTTON, null,mMediaFile);
-                dismiss();
-            }
+        mDeleteButton.setOnClickListener(view -> {
+            mDialogClickListener.onButtonClicked(Constant.DELETE_BUTTON, null,mMediaFile);
+            dismiss();
         });
 
-        mCancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mDialogClickListener.onButtonClicked(Constant.CANCEL_BUTTON, null, null);
-                dismiss();
-            }
+        mCancelButton.setOnClickListener(view -> {
+            mDialogClickListener.onButtonClicked(Constant.CANCEL_BUTTON, null, null);
+            dismiss();
         });
 
     }

@@ -9,21 +9,18 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.EditText;
 
-import com.example.vic.Adapters.ImageFileAdapter;
 import com.example.vic.Adapters.MediaFilesAdapter;
-import com.example.vic.Adapters.VideoFileAdapter;
 import com.example.vic.Common.Constant;
 import com.example.vic.Dialog.ChooseActionFragment;
 import com.example.vic.Dialog.CompressorDialogFragment;
@@ -45,11 +42,12 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
 
+import net.alhazmy13.mediapicker.Image.ImagePicker;
+import net.alhazmy13.mediapicker.Video.VideoPicker;
+
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity
         implements ItemClickListener, DialogClickListener,
@@ -58,9 +56,7 @@ public class MainActivity extends AppCompatActivity
                    LoadingDialogListener {
 
     // Final Var
-    private static final int CAPTURE_IMAGE_CODE = 1;
     private static final int BROWSE_IMAGE_CODE  = 2;
-    private static final int CAPTURE_VIDEO_CODE = 3;
     private static final int BROWSE_VIDEO_CODE  = 4;
 
     // Views
@@ -70,7 +66,6 @@ public class MainActivity extends AppCompatActivity
 
     // Local Vars
     private boolean mIsImage = true;
-    private boolean mIsCompressButtonClicked = false;
     private MediaFiles mMediaFile;
 
     // Custom References
@@ -119,17 +114,21 @@ public class MainActivity extends AppCompatActivity
         mBitmapManager = BitmapManager.with(this);
         mBitmapManager.setCompressorListener(this);
 
-        mDeleteDialogFragment = DeleteItemDialogFragment.getInstance();
-        mDeleteDialogFragment.setDialogClickListener(this);
-
-        mCompressorDialogFragment = CompressorDialogFragment.getInstance();
-        mCompressorDialogFragment.setDialogClickListener(this);
-
         mPermissionManager = PermissionManager.getInstance(this);
         mPermissionManager.setListener(this);
 
         mChooseActionFragment = ChooseActionFragment.with();
         mChooseActionFragment.setChooseActionListener(this);
+
+        if(mDeleteDialogFragment == null){
+            mDeleteDialogFragment = new DeleteItemDialogFragment();
+            mDeleteDialogFragment.setDialogClickListener(this);
+        }
+
+        if(mCompressorDialogFragment == null){
+            mCompressorDialogFragment = new CompressorDialogFragment();
+            mCompressorDialogFragment.setDialogClickListener(this);
+        }
 
         if(mLoadingDialogFragment == null){
             mLoadingDialogFragment = new LoadingDialogFragment();
@@ -149,6 +148,8 @@ public class MainActivity extends AppCompatActivity
 
         if(getSupportActionBar() != null){
             getSupportActionBar().setTitle(getString(R.string.app_name));
+            mToolbar.setTitle(getString(R.string.app_name));
+            mToolbar.setTitleTextColor(Color.WHITE);
         }
     }
 
@@ -180,7 +181,7 @@ public class MainActivity extends AppCompatActivity
             mMediaFilesAdapter = new MediaFilesAdapter(this, mMediaFileList,this);
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
-        llm.setStackFromEnd(true);
+        llm.setStackFromEnd(false);
         llm.setReverseLayout(false);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setHasFixedSize(true);
@@ -227,17 +228,17 @@ public class MainActivity extends AppCompatActivity
                }
 
            }else if(whichButton.equals(Constant.COMPRESS_BUTTON) && fileType != null){
-               mIsCompressButtonClicked = true;
 
                if(fileType.equals(Constant.IMAGE)){
                    showLoadingDialog("Please Wait","Compressing file, please wait...", null);
                    mBitmapManager.compress(true, item.getmFilePath(), Constant.VIC_FOLDER);
-               }else {
+               }
+               if(fileType.equals(Constant.VIDEO)){
                    showLoadingDialog("Please Wait","Compressing file, please wait...", null);
                    mBitmapManager.compress(false, item.getmFilePath(), Constant.VIC_FOLDER);
                }
-           }
 
+           }
         }
     }
 
@@ -267,10 +268,15 @@ public class MainActivity extends AppCompatActivity
 
     // End Point: Capture single Image
     private void captureImage() {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-        if(intent.resolveActivity(getPackageManager()) != null)
-            startActivityForResult(intent, CAPTURE_IMAGE_CODE);
+        new ImagePicker.Builder(this)
+                .mode(ImagePicker.Mode.CAMERA)
+                .compressLevel(ImagePicker.ComperesLevel.MEDIUM)
+                .directory(ImagePicker.Directory.DEFAULT)
+                .extension(ImagePicker.Extension.PNG)
+                .scale(600, 600)
+                .allowMultipleImages(false)
+                .enableDebuggingMode(true)
+                .build();
     }
 
     // End Point: Browse single Image
@@ -288,10 +294,12 @@ public class MainActivity extends AppCompatActivity
 
     // End Point: Capture single Video
     private void captureVideo() {
-        Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-
-        if(intent.resolveActivity(getPackageManager()) != null)
-            startActivityForResult(intent, CAPTURE_VIDEO_CODE);
+        new VideoPicker.Builder(this)
+                .mode(VideoPicker.Mode.CAMERA)
+                .directory(VideoPicker.Directory.DEFAULT)
+                .extension(VideoPicker.Extension.MP4)
+                .enableDebuggingMode(true)
+                .build();
     }
 
     // End Point: Browse single Video
@@ -314,13 +322,12 @@ public class MainActivity extends AppCompatActivity
         if(resultCode == RESULT_OK){
 
             if(data != null){
-                if(requestCode == CAPTURE_IMAGE_CODE){
+                if (requestCode == ImagePicker.IMAGE_PICKER_REQUEST_CODE) {
                     mIsImage = true;
+                    List<String> mPaths = data.getStringArrayListExtra(ImagePicker.EXTRA_IMAGE_PATH);
 
-                    Uri uri = data.getData();
-
-                    if (uri != null) {
-                        mSelectedImagePath = uri.toString();
+                    if(mPaths != null){
+                        mSelectedImagePath = mPaths.get(0);
                         workWithImage(mSelectedImagePath);
                     }
 
@@ -332,23 +339,27 @@ public class MainActivity extends AppCompatActivity
                     mSelectedImagePath = paths.get(0);
                     workWithImage(mSelectedImagePath);
 
-                } else if(requestCode == CAPTURE_VIDEO_CODE){
-                    mIsImage = false;
-                    Uri uri = data.getData();
+                } else if (requestCode == VideoPicker.VIDEO_PICKER_REQUEST_CODE) {
+                    List<String> mPaths =  data.getStringArrayListExtra(VideoPicker.EXTRA_VIDEO_PATH);
 
-                    if (uri != null) {
-                        mSelectedVideoPath = uri.toString();
-                        workWithVideo(mSelectedVideoPath, uri);
+                    if (mPaths != null) {
+                        mIsImage = false;
+
+                        mSelectedVideoPath = mPaths.get(0);
+                        File file = new File(mSelectedVideoPath);
+                        Uri videoUri = Uri.fromFile(file);
+                        workWithVideo(mSelectedVideoPath, videoUri);
                     }
 
                 } else if(requestCode == BROWSE_VIDEO_CODE){
                     mIsImage = false;
 
                     List<String> paths = Matisse.obtainPathResult(data);
-                    List<Uri> uris = Matisse.obtainResult(data);
 
                     mSelectedVideoPath = paths.get(0);
-                    workWithVideo(mSelectedVideoPath, uris.get(0));
+                    File file = new File(mSelectedVideoPath);
+                    Uri videoUri = Uri.fromFile(file);
+                    workWithVideo(mSelectedVideoPath, videoUri);
                 }
             }
 
@@ -360,17 +371,17 @@ public class MainActivity extends AppCompatActivity
 
     // End Point: Working with Selected image via path
     private void workWithImage(String imagePath) {
-        ImageFile imageFile = (ImageFile) mBitmapManager.extractMediaDetails(imagePath);
+        mMediaFile = mBitmapManager.extractMediaDetails(imagePath, true);
         mIsImage = true;
-        showCompressorDialog(true, Constant.IMAGE, imageFile);
+        showCompressorDialog(true, Constant.IMAGE, mMediaFile);
     }
 
     // End Point: Working with Selected video via path
     private void workWithVideo(String videoPath, Uri videoUri) {
-        VideoFile videoFile = (VideoFile) mBitmapManager.extractMediaDetails(videoPath);
-        videoFile.setmFileUri(videoUri);
+        mMediaFile = mBitmapManager.extractMediaDetails(videoPath, false);
+        mMediaFile.setmFileUri(videoUri);
         mIsImage = false;
-        showCompressorDialog(false, Constant.VIDEO, videoFile);
+        showCompressorDialog(false, Constant.VIDEO, mMediaFile);
     }
 
     // End Point: Sending Compressor Dialog a Bundle & Show it
@@ -381,7 +392,6 @@ public class MainActivity extends AppCompatActivity
         mCompressorDialogFragment.setArguments(bundle);
         mCompressorDialogFragment.show(getSupportFragmentManager(),
                 mCompressorDialogFragment.getTag());
-
     }
 
     @Override
@@ -444,9 +454,7 @@ public class MainActivity extends AppCompatActivity
             saveFileToStorage(isImage, file, file.getmFileName());
 
             dialogInterface.dismiss();
-
             updateList(file);
-
         });
 
         builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
@@ -482,10 +490,13 @@ public class MainActivity extends AppCompatActivity
         }else {
 
             VideoFile videoFile = (VideoFile) file;
-            mBitmapManager.deleteThisFile(videoFile.getmFilePath());
 
+            //String videoOldName = videoFile.getmFileName();
+            String videoOldPath = videoFile.getmFilePath();
+
+            videoFile.setmFileName(fileName);
             String fileNewPath = mBitmapManager.saveFile(MainActivity.this,
-                    videoFile.getmFileUri(), fileName+".mp4",
+                    videoFile.getmFileUri(), videoFile.getmFileName()+".mp4",
                     Constant.VIC_FOLDER);
 
             if(fileNewPath != null){
@@ -493,6 +504,7 @@ public class MainActivity extends AppCompatActivity
                 videoFile.setmFilePath(fileNewPath);
             }
 
+            mBitmapManager.deleteThisFile(videoOldPath);
         }
 
     }
@@ -520,7 +532,6 @@ public class MainActivity extends AppCompatActivity
         bundle.putString(Constant.MSG, msg);
         mLoadingDialogFragment.setArguments(bundle);
         mLoadingDialogFragment.show(getSupportFragmentManager(), mLoadingDialogFragment.getTag());
-
     }
 
 }

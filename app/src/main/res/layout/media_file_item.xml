@@ -14,7 +14,6 @@
     app:cardPreventCornerOverlap="false"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/parent_layout"
         android:layout_width="match_parent"
@@ -50,9 +49,10 @@
             android:text="@string/app_name"
             android:textColor="@android:color/black"
             android:textSize="@dimen/norm_size"
+            android:ellipsize="end"
             android:maxLines="1"
-            android:ems="7"
-            android:maxEms="8"
+            android:ems="5"
+            android:singleLine="true"
             android:textStyle="bold"
             app:layout_constraintStart_toEndOf="@+id/guideline"
             app:layout_constraintTop_toTopOf="@+id/parent_layout"
@@ -66,10 +66,10 @@
             android:text="@string/app_name"
             android:textColor="@android:color/darker_gray"
             android:textSize="@dimen/sm_size"
+            android:ellipsize="end"
             android:maxLines="1"
+            android:singleLine="true"
             android:layout_marginTop="@dimen/xsm_margin"
-            android:ems="7"
-            android:maxEms="8"
             android:textStyle="normal"
             app:layout_constraintStart_toStartOf="@+id/title_holder"
             app:layout_constraintTop_toBottomOf="@+id/title_holder"
@@ -84,9 +84,9 @@
             android:layout_marginTop="@dimen/xsm_margin"
             android:textColor="@android:color/darker_gray"
             android:textSize="@dimen/sm_size"
+            android:ellipsize="end"
             android:maxLines="1"
-            android:ems="7"
-            android:maxEms="8"
+            android:singleLine="true"
             android:textStyle="normal"
             app:layout_constraintStart_toStartOf="@+id/size_holder"
             app:layout_constraintTop_toBottomOf="@+id/size_holder"
@@ -101,9 +101,10 @@
             android:layout_marginTop="@dimen/xsm_margin"
             android:textColor="@android:color/darker_gray"
             android:textSize="@dimen/sm_size"
+            android:singleLine="true"
+            android:ellipsize="end"
             android:maxLines="1"
-            android:ems="7"
-            android:maxEms="8"
+            android:ems="6"
             android:textStyle="normal"
             app:layout_constraintStart_toStartOf="@+id/type_holder"
             app:layout_constraintTop_toBottomOf="@+id/type_holder"
@@ -133,18 +134,8 @@
             android:textSize="@dimen/sm_size"
             android:textStyle="normal"
             app:layout_constraintStart_toStartOf="@+id/date_holder"
-            app:layout_constraintBottom_toBottomOf="@+id/parent_layout"
+            app:layout_constraintBottom_toBottomOf="@+id/path_holder"
             app:layout_constraintEnd_toEndOf="@+id/date_holder"/>
-
-        <!-- View -->
-        <View
-            android:layout_width="0dp"
-            android:layout_height="2dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginTop="@dimen/xsm_margin"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/time_holder"
-            app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

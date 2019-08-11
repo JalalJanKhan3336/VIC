@@ -13,11 +13,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.vic.Common.Constant;
 import com.example.vic.Listener.ItemClickListener;
-import com.example.vic.Model.ImageFile;
 import com.example.vic.Model.MediaFiles;
 import com.example.vic.R;
 import com.example.vic.Utils.GlideUtils;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class MediaFilesAdapter extends RecyclerView.Adapter<MediaFilesAdapter.MediaFileViewHolder> {
@@ -68,7 +68,10 @@ public class MediaFilesAdapter extends RecyclerView.Adapter<MediaFilesAdapter.Me
 
         GlideUtils.loadCircularImageAsBitmap(mContext, obj.getmFilePath(), holder.mThumbnailHolder);
 
-        String size = Constant.SIZE + obj.getmFileSizeInMB();
+        DecimalFormat df = new DecimalFormat("#.###");
+        double d = Double.valueOf(df.format(obj.getmFileSizeInMB()));
+
+        String size = Constant.SIZE + d + Constant.MB;
         String type = Constant.FILE_TYPE + obj.getmFileType();
         String path = Constant.PATH + obj.getmFilePath();
 

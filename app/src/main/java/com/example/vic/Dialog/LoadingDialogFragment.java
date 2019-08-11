@@ -17,10 +17,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.vic.Common.Constant;
-import com.example.vic.Listener.DialogClickListener;
 import com.example.vic.Listener.LoadingDialogListener;
 import com.example.vic.R;
-import com.example.vic.Utils.GlideUtils;
 
 /**
  * A simple {@link Fragment} subclass.

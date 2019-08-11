@@ -13,6 +13,7 @@ import com.example.vic.Common.Constant;
 import com.example.vic.Listener.CompressorListener;
 import com.example.vic.Model.ImageFile;
 import com.example.vic.Model.MediaFiles;
+import com.example.vic.Model.VideoFile;
 import com.iceteck.silicompressorr.SiliCompressor;
 
 import java.io.File;
@@ -159,10 +160,28 @@ public class BitmapManager {
         if(isImage){
             String newPath = SiliCompressor.with(mContext).compress(filePath, destination);
 
-            mCompressorListener.onFileCompressed(Constant.IMAGE,extractMediaDetails(newPath));
+            mCompressorListener.onFileCompressed(Constant.IMAGE,extractMediaDetails(newPath, true));
 
         }else
             new VideoCompressor().execute(filePath);
+    }
+
+    // End Point: Extract Image/Video Details
+    public MediaFiles extractMediaDetails(String newPath, boolean isImage) {
+
+        // Extract File Properties
+        File file = new File(newPath);
+
+        String fileName = getFileName(newPath);
+        String filePath = getFileAbsPath(newPath);
+        String extension = getFileExtension(newPath);
+        double sizeInMB = getFileSize(newPath);
+        Uri fileUri = Uri.fromFile(file);
+
+        if(isImage)
+            return new ImageFile(filePath, fileName, sizeInMB, extension, fileUri);
+        else
+            return new VideoFile(filePath, fileName, sizeInMB, extension, fileUri);
     }
 
     // End Point: Extract Image/Video Details
@@ -230,7 +249,7 @@ public class BitmapManager {
         @Override
         protected void onPostExecute(String newPath) {
             super.onPostExecute(newPath);
-            mCompressorListener.onFileCompressed(Constant.VIDEO, extractMediaDetails(newPath));
+            mCompressorListener.onFileCompressed(Constant.VIDEO, extractMediaDetails(newPath, false));
         }
     }
 
