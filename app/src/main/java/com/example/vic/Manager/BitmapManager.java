@@ -9,9 +9,10 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 
+import com.example.vic.Common.Constant;
+import com.example.vic.Listener.CompressorListener;
 import com.example.vic.Model.ImageFile;
-import com.example.vic.Model.VideoFile;
-import com.example.vic.Utils.MessageUtils;
+import com.example.vic.Model.MediaFiles;
 import com.iceteck.silicompressorr.SiliCompressor;
 
 import java.io.File;
@@ -36,13 +37,15 @@ public class BitmapManager {
         return mBitmapManager;
     }
 
+    private CompressorListener mCompressorListener;
+
+    public void setCompressorListener(CompressorListener listener){
+        if(listener != null)
+            mCompressorListener = listener;
+    }
+
+
     private Context mContext;
-    private final String ROOT_DIR = Environment.getExternalStorageDirectory().toString();
-    private final File VIC_FOLDER = new File(ROOT_DIR+"/VIC");
-    private final File IMAGE_FOLDER = new File(VIC_FOLDER+"/Images");
-    private final File VIDEO_FOLDER = new File(VIC_FOLDER+"/Videos");
-    private String mCompressedVideoPath = null;
-    private boolean isVideoCompressed = false;
 
     private BitmapManager(Context context){
         mContext = context;
@@ -50,19 +53,13 @@ public class BitmapManager {
     }
 
     private void checkFolder() {
-        if(!VIC_FOLDER.exists())
-            VIC_FOLDER.mkdir();
-
-        if(!IMAGE_FOLDER.exists())
-            IMAGE_FOLDER.mkdir();
-
-        if(!VIDEO_FOLDER.exists())
-            VIDEO_FOLDER.mkdir();
+        if(!Constant.VIC_FOLDER.exists())
+            Constant.VIC_FOLDER.mkdir();
     }
 
     // End Point: Saving Image into Storage
-    public String saveFile(Bitmap image, String imageName){
-        File imageFile = new File(IMAGE_FOLDER, imageName);
+    public String saveFile(Bitmap image, String imageName, File destination){
+        File imageFile = new File(destination, imageName);
 
         if(imageFile.exists())
             imageFile.delete();
@@ -82,7 +79,7 @@ public class BitmapManager {
     }
 
     // End Point: Saving Video into Storage
-    public String saveFile(Context context, Uri videoUri, String videoName){
+    public String saveFile(Context context, Uri videoUri, String videoName, File destination){
 
         try {
             AssetFileDescriptor videoAsset = context.getContentResolver().openAssetFileDescriptor(videoUri, "r");
@@ -90,7 +87,7 @@ public class BitmapManager {
             if (videoAsset != null) {
                 FileInputStream fin = videoAsset.createInputStream();
 
-                File videoFile = new File(VIDEO_FOLDER, videoName);
+                File videoFile = new File(destination, videoName);
 
                 if(videoFile.exists())
                     videoFile.delete();
@@ -136,84 +133,40 @@ public class BitmapManager {
         return false;
     }
 
-    public List<String> getAllFiles(){
-        List<String> filesPaths = new ArrayList<>();
-
-        List<String> imagePaths = getAllImages();
-
-        if(imagePaths != null){
-            filesPaths.addAll(imagePaths);
-        }
-
-        List<String> videoPaths = getAllVideos();
-
-        if(videoPaths != null){
-            filesPaths.addAll(videoPaths);
-        }
-
-        return filesPaths;
-    }
-
-    // Get All Images' Paths from VIC/Images folder
-    public List<String> getAllImages(){
-        List<String> imagesPaths = new ArrayList<>();
-        File[] imageFiles;
+    // Get All Images/Videos' Paths from Specified folder
+    public List<String> getAllMediaFiles(File destination){
+        List<String> paths = new ArrayList<>();
+        File[] files;
 
         checkFolder();
 
-        if(IMAGE_FOLDER.isDirectory()){
-            imageFiles = IMAGE_FOLDER.listFiles();
+        if(destination.isDirectory()){
+            files = destination.listFiles();
 
-            if(imageFiles != null){
-                for (File imageFile : imageFiles) {
-                    imagesPaths.add(imageFile.getAbsolutePath());
+            if(files != null){
+                for (File myFile : files) {
+                    if(myFile.exists())
+                        paths.add(myFile.getAbsolutePath());
                 }
             }
 
         }
 
-        return imagesPaths;
+        return paths;
     }
 
-
-    // Get All Videos' Paths from VIC/Videos folder
-    public List<String> getAllVideos(){
-        List<String> videosPaths = new ArrayList<>();
-        File[] videosPath;
-
-        checkFolder();
-
-        if(VIDEO_FOLDER.isDirectory()){
-            videosPath = VIDEO_FOLDER.listFiles();
-
-            if(videosPath != null){
-                for (File videoPath : videosPath) {
-                    videosPaths.add(videoPath.getAbsolutePath());
-                }
-            }
-
-        }
-
-        return videosPaths;
-    }
-
-    public Object compress(boolean isImage, String filePath) {
+    public void compress(boolean isImage, String filePath, File destination) {
         if(isImage){
-            String newPath = SiliCompressor.with(mContext).compress(filePath, IMAGE_FOLDER);
-            return extractImageDetails(newPath);
-        }else {
+            String newPath = SiliCompressor.with(mContext).compress(filePath, destination);
 
+            mCompressorListener.onFileCompressed(Constant.IMAGE,extractMediaDetails(newPath));
+
+        }else
             new VideoCompressor().execute(filePath);
-
-            if(isVideoCompressed)
-                return extractVideoDetails(mCompressedVideoPath);
-            else
-                return null;
-        }
     }
 
-    // End Point: Extract Image Details
-    public ImageFile extractImageDetails(String newPath) {
+    // End Point: Extract Image/Video Details
+    public MediaFiles extractMediaDetails(String newPath) {
 
         // Extract File Properties
         File file = new File(newPath);
@@ -224,44 +177,29 @@ public class BitmapManager {
         double sizeInMB = getFileSize(newPath);
         Uri fileUri = Uri.fromFile(file);
 
-        return new ImageFile(filePath, fileName, sizeInMB, extension, fileUri);
+        return new MediaFiles(filePath, fileName, sizeInMB, extension, fileUri);
     }
 
-    public String getFileName(String filePath) {
+    private String getFileName(String filePath) {
         File file = new File(filePath);
         return file.getName();
     }
 
-    public String getFileAbsPath(String filePath) {
+    private String getFileAbsPath(String filePath) {
         File file = new File(filePath);
         return file.getAbsolutePath();
     }
 
-    public String getFileExtension(String filePath) {
+    private String getFileExtension(String filePath) {
         return filePath.substring(filePath.lastIndexOf("."));
     }
 
-    public double getFileSize(String filePath) {
+    private double getFileSize(String filePath) {
         File file = new File(filePath);
 
         long sizeInKB = file.length() / 1024;
 
         return (double) sizeInKB / 1024;
-    }
-
-    // End Point: Extract Video Details
-    public VideoFile extractVideoDetails(String newPath) {
-
-        // Extract File Properties
-        File file = new File(newPath);
-
-        String fileName = getFileName(newPath);
-        String filePath = getFileAbsPath(newPath);
-        String extension = getFileExtension(newPath);
-        double sizeInMB = getFileSize(newPath);
-        Uri fileUri = Uri.fromFile(file);
-
-        return new VideoFile(filePath, fileName, sizeInMB, extension, fileUri);
     }
 
     private boolean isSDCardSupported(){
@@ -281,10 +219,8 @@ public class BitmapManager {
             String filePath = paths[0];
 
             try {
-                newPath = SiliCompressor.with(mContext).compressVideo(filePath,VIDEO_FOLDER.toString());
-                isVideoCompressed = true;
+                newPath = SiliCompressor.with(mContext).compressVideo(filePath,Constant.VIC_FOLDER.toString());
             } catch (URISyntaxException e) {
-                isVideoCompressed = false;
                 e.printStackTrace();
             }
 
@@ -294,7 +230,7 @@ public class BitmapManager {
         @Override
         protected void onPostExecute(String newPath) {
             super.onPostExecute(newPath);
-            mCompressedVideoPath = newPath;
+            mCompressorListener.onFileCompressed(Constant.VIDEO, extractMediaDetails(newPath));
         }
     }
 

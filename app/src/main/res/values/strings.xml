@@ -24,4 +24,7 @@
     <string name="size">Size:</string>
     <string name="type">Type:</string>
     <string name="path">Path:</string>
+    <string name="icon_holder">Result Icon</string>
+    <string name="re_compress">Recompress</string>
+    <string name="save">Save</string>
 </resources>

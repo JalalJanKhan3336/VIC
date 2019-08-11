@@ -11,6 +11,8 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.MediaController;
@@ -18,6 +20,8 @@ import android.widget.TextView;
 import android.widget.VideoView;
 
 import com.example.vic.Common.Constant;
+import com.example.vic.Listener.DialogClickListener;
+import com.example.vic.Listener.LoadingDialogListener;
 import com.example.vic.Manager.BitmapManager;
 import com.example.vic.Listener.CompressorListener;
 import com.example.vic.Model.ImageFile;
@@ -25,14 +29,14 @@ import com.example.vic.Model.MediaFiles;
 import com.example.vic.Model.VideoFile;
 import com.example.vic.R;
 import com.example.vic.Utils.GlideUtils;
-import com.example.vic.Utils.MessageUtils;
+
+import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class CompressorDialogFragment extends DialogFragment {
 
-    @SuppressLint("StaticFieldLeak")
     private static CompressorDialogFragment mInstance;
 
     public static CompressorDialogFragment getInstance(){
@@ -42,10 +46,11 @@ public class CompressorDialogFragment extends DialogFragment {
         return mInstance;
     }
 
-    private CompressorListener mCompressorListener;
+    // Listener Ref
+    private DialogClickListener mDialogClickListener;
 
-    public void setCompressorListener(CompressorListener listener){
-        mCompressorListener = listener;
+    public void setDialogClickListener(DialogClickListener listener){
+        mDialogClickListener = listener;
     }
 
     // Widgets
@@ -79,13 +84,17 @@ public class CompressorDialogFragment extends DialogFragment {
         initView(view);
         clickOnView();
 
+        setVisibilityStatus(View.VISIBLE, View.GONE);
+
         if(getArguments() != null){
             mIsImage = getArguments().getBoolean(Constant.IS_IMAGE);
 
             if(mIsImage){
+                setVisibilityStatus(View.VISIBLE, View.GONE);
                 mImageFile = (ImageFile) getArguments().getSerializable(Constant.IMAGE);
                 populateFields(mImageFile, true);
             }else {
+                setVisibilityStatus(View.GONE, View.VISIBLE);
                 mVideoFile = (VideoFile) getArguments().getSerializable(Constant.VIDEO);
                 populateFields(mVideoFile, false);
             }
@@ -96,25 +105,30 @@ public class CompressorDialogFragment extends DialogFragment {
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
     private void populateFields(MediaFiles file, boolean isImage) {
         if(isImage){
-
-            mImageHolder.setVisibility(View.VISIBLE);
-            mVideoHolder.setVisibility(View.GONE);
-
+            setVisibilityStatus(View.VISIBLE, View.GONE);
             GlideUtils.loadImageAsBitmap(getContext(), file.getmFilePath(), mImageHolder);
-
         }else {
-
-            mImageHolder.setVisibility(View.GONE);
-            mVideoHolder.setVisibility(View.VISIBLE);
-
+            setVisibilityStatus(View.GONE, View.VISIBLE);
             mVideoHolder.setVideoURI(file.getmFileUri());
+
+            // Quick fix for Showing VideoView on DialogFragment
+            if(getDialog() != null) {
+                mVideoHolder.setZOrderOnTop(true);
+                Window window = getDialog().getWindow();
+
+                if(window != null){
+                    WindowManager.LayoutParams a = window.getAttributes();
+                    a.dimAmount = 0;
+                    window.setAttributes(a);
+                }
+
+            }
 
             setUpMediaController();
         }
 
-
         mTitleHolder.setText(file.getmFileName());
-        mSizeHolder.setText(String.format("%.3f",file.getmFileSizeInMB())+Constant.MB);
+        mSizeHolder.setText(file.getmFileSizeInMB()+Constant.MB);
         mTypeHolder.setText(file.getmFileType());
         mPathHolder.setText(file.getmFilePath());
     }
@@ -143,23 +157,27 @@ public class CompressorDialogFragment extends DialogFragment {
     // End Point: Trigger Action when a view is clicked
     private void clickOnView() {
         mCompressButton.setOnClickListener(view -> {
+
             if (mIsImage){
-                mImageFile = (ImageFile) BitmapManager.with(getContext()).compress(true, mImageFile.getmFilePath());
-                mCompressorListener.onFileCompressed(Constant.IMAGE, mImageFile);
+                mDialogClickListener.onButtonClicked(Constant.COMPRESS_BUTTON,Constant.IMAGE, mImageFile);
             }
             else {
-                mVideoFile = (VideoFile) BitmapManager.with(getContext()).compress(false, mVideoFile.getmFilePath());
-                mCompressorListener.onFileCompressed(Constant.VIDEO, mVideoFile);
+                mDialogClickListener.onButtonClicked(Constant.COMPRESS_BUTTON, Constant.VIDEO, mVideoFile);
             }
 
             dismiss();
         });
 
         mCancelButton.setOnClickListener(view -> {
-            mCompressorListener.onFileCompressed(null, null);
+            mDialogClickListener.onButtonClicked(Constant.CANCEL_BUTTON, null, null);
             dismiss();
         });
 
+    }
+
+    private void setVisibilityStatus(int status1, int status2){
+        mImageHolder.setVisibility(status1);
+        mVideoHolder.setVisibility(status2);
     }
 
 }

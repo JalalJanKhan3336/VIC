@@ -93,7 +93,7 @@ public class DeleteItemDialogFragment extends DialogFragment {
         mDeleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mDialogClickListener.onButtonClicked(Constant.DELETE_BUTTON, mMediaFile);
+                mDialogClickListener.onButtonClicked(Constant.DELETE_BUTTON, null,mMediaFile);
                 dismiss();
             }
         });
@@ -101,7 +101,7 @@ public class DeleteItemDialogFragment extends DialogFragment {
         mCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mDialogClickListener.onButtonClicked(Constant.CANCEL_BUTTON, null);
+                mDialogClickListener.onButtonClicked(Constant.CANCEL_BUTTON, null, null);
                 dismiss();
             }
         });
