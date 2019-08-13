@@ -109,14 +109,14 @@ public class MediaFilesAdapter extends RecyclerView.Adapter<MediaFilesAdapter.Me
         mMediaFileListener.onItemSwiped(file, mSimpleCallback);
     }
 
-    public class MediaFileViewHolder extends RecyclerView.ViewHolder {
+    class MediaFileViewHolder extends RecyclerView.ViewHolder {
 
         // Views
         private ImageView mThumbnailHolder;
         private TextView mTitleHolder, mSizeHolder, mTypeHolder,
                 mPathHolder, mDateHolder, mTimeHolder;
 
-        public MediaFileViewHolder(@NonNull View itemView) {
+        MediaFileViewHolder(@NonNull View itemView) {
             super(itemView);
 
             mSizeHolder = itemView.findViewById(R.id.size_holder);
