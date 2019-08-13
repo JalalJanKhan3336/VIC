@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 public class MediaFiles implements Serializable {
 
-    private String mFileName, mFileType, mFilePath;
+    private String mFileName, mFileType, mFilePath, mFileExtension;
     private String mFileCompressionDate, mFileCompressionTime;
     private Uri mFileUri;
     private double mFileSizeInMB;
@@ -16,12 +16,13 @@ public class MediaFiles implements Serializable {
     public MediaFiles() {}
 
     public MediaFiles(String mFilePath, String mFileName, double mFileSizeInMB,
-                     String mFileType, Uri mFileUri) {
+                     String mFileType, String mFileExtension, Uri mFileUri) {
 
         this.mFilePath = mFilePath;
         this.mFileName = mFileName;
         this.mFileSizeInMB = mFileSizeInMB;
         this.mFileType = mFileType;
+        this.mFileExtension = mFileExtension;
         this.mFileUri = mFileUri;
 
         this.mFileCompressionDate = SystemUtils.getCurrentDate();
@@ -29,12 +30,13 @@ public class MediaFiles implements Serializable {
     }
 
     public MediaFiles(String mFilePath, String mFileName, double mFileSizeInMB, String mFileType,
-                     String mFileCompressionDate, String mFileCompressionTime, Uri mFileUri) {
+                      String mFileExtension, String mFileCompressionDate, String mFileCompressionTime, Uri mFileUri) {
 
         this.mFilePath = mFilePath;
         this.mFileName = mFileName;
         this.mFileSizeInMB = mFileSizeInMB;
         this.mFileType = mFileType;
+        this.mFileExtension = mFileExtension;
         this.mFileCompressionDate = mFileCompressionDate;
         this.mFileCompressionTime = mFileCompressionTime;
         this.mFileUri = mFileUri;
@@ -58,6 +60,14 @@ public class MediaFiles implements Serializable {
 
     public double getmFileSizeInMB() {
         return mFileSizeInMB;
+    }
+
+    public String getmFileExtension() {
+        return mFileExtension;
+    }
+
+    public void setmFileExtension(String mFileExtension) {
+        this.mFileExtension = mFileExtension;
     }
 
     public void setmFileSizeInMB(double mFileSizeInMB) {

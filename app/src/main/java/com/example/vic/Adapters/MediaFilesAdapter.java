@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,7 +22,6 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 public class MediaFilesAdapter extends RecyclerView.Adapter<MediaFilesAdapter.MediaFileViewHolder> {
-
 
     private Context mContext;
     private List<MediaFiles> mMediaFilesList;
@@ -72,7 +72,7 @@ public class MediaFilesAdapter extends RecyclerView.Adapter<MediaFilesAdapter.Me
         double d = Double.valueOf(df.format(obj.getmFileSizeInMB()));
 
         String size = Constant.SIZE + d + Constant.MB;
-        String type = Constant.FILE_TYPE + obj.getmFileType();
+        String type = Constant.FILE_TYPE + obj.getmFileExtension();
         String path = Constant.PATH + obj.getmFilePath();
 
         holder.mSizeHolder.setText(size);
@@ -95,20 +95,12 @@ public class MediaFilesAdapter extends RecyclerView.Adapter<MediaFilesAdapter.Me
         final MediaFiles obj = mMediaFilesList.get(position);
 
         // When an Item Clicked
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mMediaFileListener.onItemClicked(obj);
-            }
-        });
+        holder.itemView.setOnClickListener(view -> mMediaFileListener.onItemClicked(obj, holder.itemView, position));
 
         // When an Item Long Clicked
-        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                mMediaFileListener.onItemLongClicked(obj);
-                return true;
-            }
+        holder.itemView.setOnLongClickListener(view -> {
+            mMediaFileListener.onItemLongClicked(obj, holder.itemView, position);
+            return true;
         });
 
     }

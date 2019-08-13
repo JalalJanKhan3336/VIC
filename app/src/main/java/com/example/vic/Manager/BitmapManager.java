@@ -179,9 +179,9 @@ public class BitmapManager {
         Uri fileUri = Uri.fromFile(file);
 
         if(isImage)
-            return new ImageFile(filePath, fileName, sizeInMB, extension, fileUri);
+            return new ImageFile(filePath, fileName, sizeInMB, Constant.IMAGE, extension, fileUri);
         else
-            return new VideoFile(filePath, fileName, sizeInMB, extension, fileUri);
+            return new VideoFile(filePath, fileName, sizeInMB, Constant.VIDEO, extension, fileUri);
     }
 
     // End Point: Extract Image/Video Details
@@ -196,7 +196,7 @@ public class BitmapManager {
         double sizeInMB = getFileSize(newPath);
         Uri fileUri = Uri.fromFile(file);
 
-        return new MediaFiles(filePath, fileName, sizeInMB, extension, fileUri);
+        return new MediaFiles(filePath,fileName,sizeInMB,"",extension, fileUri);
     }
 
     private String getFileName(String filePath) {

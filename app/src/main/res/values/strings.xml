@@ -27,4 +27,6 @@
     <string name="icon_holder">Result Icon</string>
     <string name="re_compress">Recompress</string>
     <string name="save">Save</string>
+    <string name="share">Share</string>
+    <string name="select_all">Select All</string>
 </resources>

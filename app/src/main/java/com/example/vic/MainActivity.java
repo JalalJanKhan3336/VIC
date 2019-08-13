@@ -1,9 +1,11 @@
 package com.example.vic;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,8 +18,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 
 import com.example.vic.Adapters.MediaFilesAdapter;
@@ -38,6 +44,7 @@ import com.example.vic.Model.ImageFile;
 import com.example.vic.Model.MediaFiles;
 import com.example.vic.Model.VideoFile;
 import com.example.vic.Utils.MessageUtils;
+import com.example.vic.Utils.MoverUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
@@ -46,6 +53,7 @@ import net.alhazmy13.mediapicker.Image.ImagePicker;
 import net.alhazmy13.mediapicker.Video.VideoPicker;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,12 +69,14 @@ public class MainActivity extends AppCompatActivity
 
     // Views
     private Toolbar mToolbar;
+    private Menu mMainMenu;
     private RecyclerView mRecyclerView;
     private FloatingActionButton mNewCompressionFAB;
 
     // Local Vars
     private boolean mIsImage = true;
     private MediaFiles mMediaFile;
+    private List<MediaFiles> mSelectedMediaFilesList;
 
     // Custom References
     private List<MediaFiles> mMediaFileList;
@@ -82,10 +92,6 @@ public class MainActivity extends AppCompatActivity
     private LoadingDialogFragment mLoadingDialogFragment;
     private CompressorDialogFragment mCompressorDialogFragment;
 
-    // Local References
-    private String mCompressedSavedImagePath, mSelectedImagePath;
-    private String mCompressedSavedVideoPath, mSelectedVideoPath;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,7 +101,6 @@ public class MainActivity extends AppCompatActivity
         initRef();
         clickOnButton();
         setUpToolbar();
-        populateList();
 
         mPermissionManager.askPermissions();
     }
@@ -110,6 +115,7 @@ public class MainActivity extends AppCompatActivity
     // End Point: Initialize References
     private void initRef() {
         mMediaFileList = new ArrayList<>();
+        mSelectedMediaFilesList = new ArrayList<>();
 
         mBitmapManager = BitmapManager.with(this);
         mBitmapManager.setCompressorListener(this);
@@ -153,6 +159,12 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        populateList();
+    }
+
     // End Point: Populating List of Image & Video Files
     private void populateList() {
         List<String> filesPath = mBitmapManager.getAllMediaFiles(Constant.VIC_FOLDER);
@@ -183,63 +195,93 @@ public class MainActivity extends AppCompatActivity
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setStackFromEnd(false);
         llm.setReverseLayout(false);
+
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(llm);
-
         mRecyclerView.setAdapter(mMediaFilesAdapter);
     }
 
     @Override
-    public void onItemClicked(MediaFiles mediaFile) {
-
+    public void onItemClicked(MediaFiles mediaFile, View item, int position) {
+        if(mediaFile.getmFileType().equals(Constant.IMAGE)){
+            move(true, Constant.IMAGE, mediaFile);
+        } else {
+            move(false, Constant.VIDEO, mediaFile);
+        }
     }
 
     @Override
-    public void onItemLongClicked(MediaFiles mediaFile) {
+    public void onItemLongClicked(MediaFiles mediaFile, View item, int position) {
 
+        if(mSelectedMediaFilesList.size() <= 0){
+            item.setBackgroundColor(Color.GRAY);
+            mSelectedMediaFilesList.add(mediaFile);
+        }else {
+            for(MediaFiles mf : mSelectedMediaFilesList){
+                if(mMediaFileList.indexOf(mf) == position){
+                    item.setBackgroundColor(Color.WHITE);
+                    mSelectedMediaFilesList.remove(mf);
+                }else{
+                    item.setBackgroundColor(Color.GRAY);
+                    mSelectedMediaFilesList.add(mf);
+                }
+            }
+        }
+
+        if(mMainMenu != null){
+            if(mSelectedMediaFilesList.size() > 0)
+                setMenuItemsVisibilityTo(true);
+            else
+                setMenuItemsVisibilityTo(false);
+        }
     }
 
     @Override
     public void onItemSwiped(MediaFiles mediaFile, ItemTouchHelper.SimpleCallback itemSwipedCallback) {
         new ItemTouchHelper(itemSwipedCallback).attachToRecyclerView(mRecyclerView);
-
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(Constant.MEDIA_FILE, mediaFile);
-        mDeleteDialogFragment.setArguments(bundle);
-
-        mDeleteDialogFragment.show(getSupportFragmentManager(), mDeleteDialogFragment.getTag());
+        List<MediaFiles> mediaFiles = new ArrayList<>();
+        mediaFiles.add(mediaFile);
+        delete(mediaFiles);
     }
 
     @Override
     public void onButtonClicked(String whichButton, String fileType, MediaFiles item) {
-        if(item != null){
-           if(whichButton.equals(Constant.DELETE_BUTTON)){
 
-               if(!mBitmapManager.deleteThisFile(item.getmFilePath())){
-                   MessageUtils.displaySnackbar(mRecyclerView,"Unable to delete the File");
-               }else {
-                   MessageUtils.displaySnackbar(mRecyclerView,"File deleted successfully!");
-                   int position = mMediaFileList.indexOf(item);
+       if(whichButton.equals(Constant.DELETE_BUTTON)){
+           int deletedItems = 0;
 
-                   mMediaFileList.remove(item);
+           for(MediaFiles file : mSelectedMediaFilesList){
+
+               if(mBitmapManager.deleteThisFile(file.getmFilePath())){
+                   int position = mMediaFileList.indexOf(file);
+
+                   mMediaFileList.remove(file);
                    mMediaFilesAdapter.notifyItemRemoved(position);
                    mMediaFilesAdapter.notifyDataSetChanged();
-               }
-
-           }else if(whichButton.equals(Constant.COMPRESS_BUTTON) && fileType != null){
-
-               if(fileType.equals(Constant.IMAGE)){
-                   showLoadingDialog("Please Wait","Compressing file, please wait...", null);
-                   mBitmapManager.compress(true, item.getmFilePath(), Constant.VIC_FOLDER);
-               }
-               if(fileType.equals(Constant.VIDEO)){
-                   showLoadingDialog("Please Wait","Compressing file, please wait...", null);
-                   mBitmapManager.compress(false, item.getmFilePath(), Constant.VIC_FOLDER);
+                   deletedItems++;
                }
 
            }
-        }
+
+           if(deletedItems > 0)
+               MessageUtils.displaySnackbar(mRecyclerView,deletedItems+" Files deleted successfully!");
+           else
+               MessageUtils.displaySnackbar(mRecyclerView,"Unable to delete a single File");
+
+       }else if(whichButton.equals(Constant.COMPRESS_BUTTON) && fileType != null){
+
+           if(fileType.equals(Constant.IMAGE)){
+               showLoadingDialog("Please Wait","Compressing file, please wait...", null);
+               mBitmapManager.compress(true, item.getmFilePath(), Constant.VIC_FOLDER);
+           }
+           if(fileType.equals(Constant.VIDEO)){
+               showLoadingDialog("Please Wait","Compressing file, please wait...", null);
+               mBitmapManager.compress(false, item.getmFilePath(), Constant.VIC_FOLDER);
+           }
+
+       }
+
     }
 
     @Override
@@ -264,6 +306,16 @@ public class MainActivity extends AppCompatActivity
             default:
                 break;
         }
+    }
+
+    // End Point: Setup Bundle & Move to Media Activity
+    private void move(boolean myFile, String fileType, MediaFiles mediaFile) {
+        Intent intent = new Intent(MainActivity.this, MediaActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(Constant.IS_IMAGE, myFile);
+        bundle.putSerializable(fileType, mediaFile);
+        intent.putExtra("bundle",bundle);
+        startActivity(intent);
     }
 
     // End Point: Capture single Image
@@ -322,6 +374,9 @@ public class MainActivity extends AppCompatActivity
         if(resultCode == RESULT_OK){
 
             if(data != null){
+                // Local References
+                String mSelectedImagePath;
+                String mSelectedVideoPath;
                 if (requestCode == ImagePicker.IMAGE_PICKER_REQUEST_CODE) {
                     mIsImage = true;
                     List<String> mPaths = data.getStringArrayListExtra(ImagePicker.EXTRA_IMAGE_PATH);
@@ -533,5 +588,96 @@ public class MainActivity extends AppCompatActivity
         mLoadingDialogFragment.setArguments(bundle);
         mLoadingDialogFragment.show(getSupportFragmentManager(), mLoadingDialogFragment.getTag());
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        mMainMenu = menu;
+        getMenuInflater().inflate(R.menu.main_menu,menu);
+
+        if(mMainMenu != null)
+            setMenuItemsVisibilityTo(true);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        boolean flag = false;
+
+        int id = item.getItemId();
+
+        switch (id){
+
+            case R.id.action_share:{
+                if(mSelectedMediaFilesList.size() > 0){
+                    for(MediaFiles mf : mSelectedMediaFilesList){
+                        share(mf);
+                    }
+
+                    mSelectedMediaFilesList.clear();
+
+                    if(mSelectedMediaFilesList.size() <= 0)
+                        setMenuItemsVisibilityTo(false);
+
+                }
+                else
+                    MessageUtils.displayToast(MainActivity.this, "Nothing Selected");
+
+                flag = true;
+                break;
+            }
+            case R.id.action_delete:{
+                if(mSelectedMediaFilesList.size() > 0)
+                    delete(mSelectedMediaFilesList);
+                else
+                    MessageUtils.displayToast(MainActivity.this, "Nothing Selected");
+
+                flag = true;
+                break;
+            }
+            default:
+                break;
+        }
+
+        return flag;
+    }
+
+    // End Point: Sharing Selected Item
+    private void share(MediaFiles mf) {
+
+        File file = new File(mf.getmFilePath());
+
+        Uri uri = Uri.fromFile(file);
+
+        if(uri != null){
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            startActivity(Intent.createChooser(intent, "Share via"));
+        }else {
+            MessageUtils.displayToast(this,"Unable to Share this file now");
+        }
+
+    }
+
+    // End Point: Deleting Selected Items
+    private void delete(List<MediaFiles> files) {
+        Bundle bundle = new Bundle();
+        bundle.putInt(Constant.SIZE, files.size());
+        mDeleteDialogFragment.setArguments(bundle);
+        mDeleteDialogFragment.show(getSupportFragmentManager(), mDeleteDialogFragment.getTag());
+    }
+
+    // End Point: Setting Menu Items Visibility Status either TRUE or FALSE
+    private void setMenuItemsVisibilityTo(boolean status) {
+        MenuItem shareItem = mMainMenu.getItem(R.id.action_share);
+        MenuItem deleteItem = mMainMenu.getItem(R.id.action_delete);
+        MenuItem selectAllItem = mMainMenu.getItem(R.id.action_select_all);
+
+        shareItem.setVisible(status);
+        deleteItem.setVisible(status);
+        selectAllItem.setVisible(status);
+    }
+
 
 }

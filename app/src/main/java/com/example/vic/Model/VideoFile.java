@@ -6,12 +6,13 @@ public class VideoFile extends MediaFiles {
 
     public VideoFile() {}
 
-    public VideoFile(String mFilePath, String mFileName, double mFileSizeInMB, String mFileType, Uri mFileUri) {
-        super(mFilePath, mFileName, mFileSizeInMB, mFileType, mFileUri);
+    public VideoFile(String mFilePath, String mFileName, double mFileSizeInMB, String mFileType, String mFileExtension, Uri mFileUri) {
+        super(mFilePath, mFileName, mFileSizeInMB, mFileType, mFileExtension, mFileUri);
     }
 
-    public VideoFile(String mFilePath, String mFileName, double mFileSizeInMB, String mFileType, String mFileCompressionDate, String mFileCompressionTime, Uri mFileUri) {
-        super(mFilePath, mFileName, mFileSizeInMB, mFileType, mFileCompressionDate, mFileCompressionTime, mFileUri);
+    public VideoFile(String mFilePath, String mFileName, double mFileSizeInMB, String mFileType, String mFileExtension,
+                     String mFileCompressionDate, String mFileCompressionTime, Uri mFileUri) {
+        super(mFilePath, mFileName, mFileSizeInMB, mFileType, mFileExtension, mFileCompressionDate, mFileCompressionTime, mFileUri);
     }
 
 }

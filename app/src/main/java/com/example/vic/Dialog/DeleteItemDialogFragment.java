@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.example.vic.Common.Constant;
 import com.example.vic.Listener.DialogClickListener;
@@ -32,16 +33,14 @@ public class DeleteItemDialogFragment extends DialogFragment {
 
     // Widgets
     private Button mCancelButton, mDeleteButton;
-
-    // Custom References
-    private MediaFiles mMediaFile;
+    private TextView mMessageHolder;
 
     public DeleteItemDialogFragment() {
         // Required empty public constructor
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_delete_item_dialog, container, false);
     }
 
@@ -55,7 +54,11 @@ public class DeleteItemDialogFragment extends DialogFragment {
         clickOnView();
 
         if(getArguments() != null){
-            mMediaFile = (MediaFiles) getArguments().getSerializable(Constant.MEDIA_FILE);
+            int noOfItems = getArguments().getInt(Constant.SIZE);
+            if(noOfItems > 0){
+                String msg = "Wanna DELETE "+noOfItems+" items?";
+                mMessageHolder.setText(msg);
+            }
         }
 
     }
@@ -64,12 +67,13 @@ public class DeleteItemDialogFragment extends DialogFragment {
     private void initView(View view) {
         mDeleteButton = view.findViewById(R.id.delete_btn);
         mCancelButton = view.findViewById(R.id.cancel_btn);
+        mMessageHolder = view.findViewById(R.id.delete_msg_tv);
     }
 
     // End Point: Trigger Action when a view is clicked
     private void clickOnView() {
         mDeleteButton.setOnClickListener(view -> {
-            mDialogClickListener.onButtonClicked(Constant.DELETE_BUTTON, null,mMediaFile);
+            mDialogClickListener.onButtonClicked(Constant.DELETE_BUTTON, null,null);
             dismiss();
         });
 

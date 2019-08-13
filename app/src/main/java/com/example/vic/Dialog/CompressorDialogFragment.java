@@ -43,7 +43,6 @@ public class CompressorDialogFragment extends DialogFragment {
     // Widgets
     private Button mCancelButton, mCompressButton;
     private ImageView mImageHolder;
-    //private VideoView mVideoHolder;
     private TextView mTitleHolder, mSizeHolder, mTypeHolder, mPathHolder;
 
     // Custom References
@@ -71,22 +70,22 @@ public class CompressorDialogFragment extends DialogFragment {
         initView(view);
         clickOnView();
 
-        setVisibilityStatus(View.VISIBLE, View.GONE);
+        setVisibilityStatus(View.VISIBLE);
 
         if(getArguments() != null){
             mIsImage = getArguments().getBoolean(Constant.IS_IMAGE);
 
             if(mIsImage){
-                setVisibilityStatus(View.VISIBLE, View.GONE);
+                setVisibilityStatus(View.VISIBLE);
                 mImageFile = (ImageFile) getArguments().getSerializable(Constant.IMAGE);
                 if (mImageFile != null) {
-                    populateFields(mImageFile, true);
+                    populateFields(mImageFile);
                 }
             }else {
-                setVisibilityStatus(View.GONE, View.VISIBLE);
+                setVisibilityStatus(View.GONE);
                 mVideoFile = (VideoFile) getArguments().getSerializable(Constant.VIDEO);
                 if (mVideoFile != null) {
-                    populateFields(mVideoFile, false);
+                    populateFields(mVideoFile);
                 }
             }
         }
@@ -94,29 +93,9 @@ public class CompressorDialogFragment extends DialogFragment {
     }
 
     @SuppressLint({"SetTextI18n", "DefaultLocale"})
-    private void populateFields(MediaFiles file, boolean isImage) {
-        //if(isImage){
-            setVisibilityStatus(View.VISIBLE, View.GONE);
-            GlideUtils.loadImageAsBitmap(getContext(), file.getmFilePath(), mImageHolder);
-        //}else {
-            //setVisibilityStatus(View.GONE, View.VISIBLE);
-            //mVideoHolder.setVideoURI(file.getmFileUri());
-
-            // Quick fix for Showing VideoView on DialogFragment
-          //  if(getDialog() != null) {
-                //mVideoHolder.setZOrderOnTop(true);
-            //    Window window = getDialog().getWindow();
-
-              //  if(window != null){
-                //    WindowManager.LayoutParams a = window.getAttributes();
-                  //  a.dimAmount = 0;
-                    //window.setAttributes(a);
-                //}
-
-            //}
-
-            //setUpMediaController();
-        //}
+    private void populateFields(MediaFiles file) {
+        setVisibilityStatus(View.VISIBLE);
+        GlideUtils.loadImageAsBitmap(getContext(), file.getmFilePath(), mImageHolder);
 
         mTitleHolder.setText(file.getmFileName());
         mSizeHolder.setText(file.getmFileSizeInMB()+Constant.MB);
@@ -124,19 +103,9 @@ public class CompressorDialogFragment extends DialogFragment {
         mPathHolder.setText(file.getmFilePath());
     }
 
-    // End Point: Applying Controls on selected video
-    private void setUpMediaController() {
-        MediaController mc = new MediaController(getContext());
-        mc.setSaveEnabled(true);
-        mc.setFocusable(true);
-        //mVideoHolder.setMediaController(mc);
-        //mc.setAnchorView(mVideoHolder);
-    }
-
     // End Point: Initialize Views
     private void initView(View view) {
         mCancelButton = view.findViewById(R.id.cancel_btn);
-        //mVideoHolder = view.findViewById(R.id.video_holder);
         mImageHolder = view.findViewById(R.id.image_holder);
         mCompressButton = view.findViewById(R.id.compress_btn);
         mTitleHolder = view.findViewById(R.id.title_holder);
@@ -166,9 +135,8 @@ public class CompressorDialogFragment extends DialogFragment {
 
     }
 
-    private void setVisibilityStatus(int status1, int status2){
+    private void setVisibilityStatus(int status1){
         mImageHolder.setVisibility(status1);
-        //mVideoHolder.setVisibility(status2);
     }
 
 }
