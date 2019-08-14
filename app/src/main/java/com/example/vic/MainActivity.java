@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,8 +18,8 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,7 +43,6 @@ import com.example.vic.Model.ImageFile;
 import com.example.vic.Model.MediaFiles;
 import com.example.vic.Model.VideoFile;
 import com.example.vic.Utils.MessageUtils;
-import com.example.vic.Utils.MoverUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
@@ -59,24 +57,25 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements ItemClickListener, DialogClickListener,
-                   ChooseActionListener, CompressorListener,
-                   PermissionManager.AllPermissionsGrantedListener,
-                   LoadingDialogListener {
+        ChooseActionListener, CompressorListener,
+        PermissionManager.AllPermissionsGrantedListener,
+        LoadingDialogListener {
 
     // Final Var
     private static final int BROWSE_IMAGE_CODE  = 2;
     private static final int BROWSE_VIDEO_CODE  = 4;
+    private static final int DARK_GRAY_COLOR = Color.parseColor("#333333");
 
     // Views
     private Toolbar mToolbar;
-    private Menu mMainMenu;
+    //private Menu mMainMenu;
     private RecyclerView mRecyclerView;
     private FloatingActionButton mNewCompressionFAB;
 
     // Local Vars
     private boolean mIsImage = true;
     private MediaFiles mMediaFile;
-    private List<MediaFiles> mSelectedMediaFilesList;
+    private List<MediaFiles> mSelectedMediaFiles;
 
     // Custom References
     private List<MediaFiles> mMediaFileList;
@@ -91,6 +90,7 @@ public class MainActivity extends AppCompatActivity
     private ChooseActionFragment mChooseActionFragment;
     private LoadingDialogFragment mLoadingDialogFragment;
     private CompressorDialogFragment mCompressorDialogFragment;
+    private static int mCounter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity
     // End Point: Initialize References
     private void initRef() {
         mMediaFileList = new ArrayList<>();
-        mSelectedMediaFilesList = new ArrayList<>();
+        mSelectedMediaFiles = new ArrayList<>();
 
         mBitmapManager = BitmapManager.with(this);
         mBitmapManager.setCompressorListener(this);
@@ -204,37 +204,53 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onItemClicked(MediaFiles mediaFile, View item, int position) {
-        if(mediaFile.getmFileType().equals(Constant.IMAGE)){
-            move(true, Constant.IMAGE, mediaFile);
-        } else {
-            move(false, Constant.VIDEO, mediaFile);
+        if(mSelectedMediaFiles.size() > 0){
+
+            if(mSelectedMediaFiles.contains(mediaFile)){
+                item.setBackgroundColor(DARK_GRAY_COLOR);
+                mSelectedMediaFiles.remove(mediaFile);
+                mCounter--;
+            }else {
+                item.setBackgroundColor(Color.GRAY);
+                mSelectedMediaFiles.add(mediaFile);
+                mCounter++;
+            }
+
+            item.setOnCreateContextMenuListener(this);
+
+        }else {
+            //MoverUtils.moveTo(MainActivity.this, MediaActivity.class, Constant.MEDIA_FILE, mediaFile);
+            move(mediaFile);
         }
     }
 
     @Override
     public void onItemLongClicked(MediaFiles mediaFile, View item, int position) {
 
-        if(mSelectedMediaFilesList.size() <= 0){
+        if(mSelectedMediaFiles.size() <= 0){
             item.setBackgroundColor(Color.GRAY);
-            mSelectedMediaFilesList.add(mediaFile);
+            mSelectedMediaFiles.add(mediaFile);
+            mCounter++;
         }else {
-            for(MediaFiles mf : mSelectedMediaFilesList){
-                if(mMediaFileList.indexOf(mf) == position){
-                    item.setBackgroundColor(Color.WHITE);
-                    mSelectedMediaFilesList.remove(mf);
-                }else{
-                    item.setBackgroundColor(Color.GRAY);
-                    mSelectedMediaFilesList.add(mf);
-                }
+            if(mSelectedMediaFiles.contains(mediaFile)){
+                item.setBackgroundColor(DARK_GRAY_COLOR);
+                mSelectedMediaFiles.remove(mediaFile);
+                mCounter--;
+            }else {
+                item.setBackgroundColor(Color.GRAY);
+                mSelectedMediaFiles.add(mediaFile);
+                mCounter++;
             }
         }
 
-        if(mMainMenu != null){
-            if(mSelectedMediaFilesList.size() > 0)
-                setMenuItemsVisibilityTo(true);
-            else
-                setMenuItemsVisibilityTo(false);
-        }
+        item.setOnCreateContextMenuListener(this);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        menu.setHeaderTitle(mCounter +" Items Selected");
+        getMenuInflater().inflate(R.menu.main_menu, menu);
     }
 
     @Override
@@ -248,39 +264,39 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onButtonClicked(String whichButton, String fileType, MediaFiles item) {
 
-       if(whichButton.equals(Constant.DELETE_BUTTON)){
-           int deletedItems = 0;
+        if(whichButton.equals(Constant.DELETE_BUTTON)){
+            int deletedItems = 0;
 
-           for(MediaFiles file : mSelectedMediaFilesList){
+            for(MediaFiles file : mSelectedMediaFiles){
 
-               if(mBitmapManager.deleteThisFile(file.getmFilePath())){
-                   int position = mMediaFileList.indexOf(file);
+                if(mBitmapManager.deleteThisFile(file.getmFilePath())){
+                    int position = mMediaFileList.indexOf(file);
 
-                   mMediaFileList.remove(file);
-                   mMediaFilesAdapter.notifyItemRemoved(position);
-                   mMediaFilesAdapter.notifyDataSetChanged();
-                   deletedItems++;
-               }
+                    mMediaFileList.remove(file);
+                    mMediaFilesAdapter.notifyItemRemoved(position);
+                    mMediaFilesAdapter.notifyDataSetChanged();
+                    deletedItems++;
+                }
 
-           }
+            }
 
-           if(deletedItems > 0)
-               MessageUtils.displaySnackbar(mRecyclerView,deletedItems+" Files deleted successfully!");
-           else
-               MessageUtils.displaySnackbar(mRecyclerView,"Unable to delete a single File");
+            if(deletedItems > 0)
+                MessageUtils.displaySnackbar(mRecyclerView,deletedItems+" Files deleted successfully!");
+            else
+                MessageUtils.displaySnackbar(mRecyclerView,"Unable to delete a single File");
 
-       }else if(whichButton.equals(Constant.COMPRESS_BUTTON) && fileType != null){
+        }else if(whichButton.equals(Constant.COMPRESS_BUTTON) && fileType != null){
 
-           if(fileType.equals(Constant.IMAGE)){
-               showLoadingDialog("Please Wait","Compressing file, please wait...", null);
-               mBitmapManager.compress(true, item.getmFilePath(), Constant.VIC_FOLDER);
-           }
-           if(fileType.equals(Constant.VIDEO)){
-               showLoadingDialog("Please Wait","Compressing file, please wait...", null);
-               mBitmapManager.compress(false, item.getmFilePath(), Constant.VIC_FOLDER);
-           }
+            if(fileType.equals(Constant.IMAGE)){
+                showLoadingDialog("Please Wait","Compressing file, please wait...", null);
+                mBitmapManager.compress(true, item.getmFilePath(), Constant.VIC_FOLDER);
+            }
+            if(fileType.equals(Constant.VIDEO)){
+                showLoadingDialog("Please Wait","Compressing file, please wait...", null);
+                mBitmapManager.compress(false, item.getmFilePath(), Constant.VIC_FOLDER);
+            }
 
-       }
+        }
 
     }
 
@@ -309,12 +325,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     // End Point: Setup Bundle & Move to Media Activity
-    private void move(boolean myFile, String fileType, MediaFiles mediaFile) {
+    private void move(MediaFiles mediaFile) {
         Intent intent = new Intent(MainActivity.this, MediaActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putBoolean(Constant.IS_IMAGE, myFile);
-        bundle.putSerializable(fileType, mediaFile);
-        intent.putExtra("bundle",bundle);
+        intent.putExtra(Constant.MEDIA_FILE, mediaFile);
         startActivity(intent);
     }
 
@@ -589,60 +602,6 @@ public class MainActivity extends AppCompatActivity
         mLoadingDialogFragment.show(getSupportFragmentManager(), mLoadingDialogFragment.getTag());
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        mMainMenu = menu;
-        getMenuInflater().inflate(R.menu.main_menu,menu);
-
-        if(mMainMenu != null)
-            setMenuItemsVisibilityTo(true);
-
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        boolean flag = false;
-
-        int id = item.getItemId();
-
-        switch (id){
-
-            case R.id.action_share:{
-                if(mSelectedMediaFilesList.size() > 0){
-                    for(MediaFiles mf : mSelectedMediaFilesList){
-                        share(mf);
-                    }
-
-                    mSelectedMediaFilesList.clear();
-
-                    if(mSelectedMediaFilesList.size() <= 0)
-                        setMenuItemsVisibilityTo(false);
-
-                }
-                else
-                    MessageUtils.displayToast(MainActivity.this, "Nothing Selected");
-
-                flag = true;
-                break;
-            }
-            case R.id.action_delete:{
-                if(mSelectedMediaFilesList.size() > 0)
-                    delete(mSelectedMediaFilesList);
-                else
-                    MessageUtils.displayToast(MainActivity.this, "Nothing Selected");
-
-                flag = true;
-                break;
-            }
-            default:
-                break;
-        }
-
-        return flag;
-    }
-
     // End Point: Sharing Selected Item
     private void share(MediaFiles mf) {
 
@@ -668,16 +627,44 @@ public class MainActivity extends AppCompatActivity
         mDeleteDialogFragment.show(getSupportFragmentManager(), mDeleteDialogFragment.getTag());
     }
 
-    // End Point: Setting Menu Items Visibility Status either TRUE or FALSE
-    private void setMenuItemsVisibilityTo(boolean status) {
-        MenuItem shareItem = mMainMenu.getItem(R.id.action_share);
-        MenuItem deleteItem = mMainMenu.getItem(R.id.action_delete);
-        MenuItem selectAllItem = mMainMenu.getItem(R.id.action_select_all);
+    @Override
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+        boolean flag = false;
 
-        shareItem.setVisible(status);
-        deleteItem.setVisible(status);
-        selectAllItem.setVisible(status);
+        int id = item.getItemId();
+
+        switch (id){
+
+            case R.id.action_share:{
+                if(mSelectedMediaFiles.size() > 0){
+                    for(MediaFiles mf : mSelectedMediaFiles){
+                        share(mf);
+                    }
+
+                    mSelectedMediaFiles.clear();
+                }
+                else
+                    MessageUtils.displayToast(MainActivity.this, "Nothing Selected");
+
+                flag = true;
+                break;
+            }
+            case R.id.action_delete:{
+                if(mSelectedMediaFiles.size() > 0){
+
+                    delete(mSelectedMediaFiles);
+                }
+                else
+                    MessageUtils.displayToast(MainActivity.this, "Nothing Selected");
+
+                flag = true;
+                break;
+            }
+            default:
+                break;
+        }
+
+        return flag;
     }
-
 
 }

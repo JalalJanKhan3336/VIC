@@ -59,23 +59,23 @@ public class MediaActivity extends AppCompatActivity
         setUpToolbar();
 
         if(getIntent() != null && getIntent().getExtras() != null){
-            mIsImage = getIntent().getExtras().getBoolean(Constant.IS_IMAGE);
 
-            if(mIsImage){
-                setVisibilityStatus(View.VISIBLE, View.GONE);
-                //mImageFile = (ImageFile) Objects.requireNonNull(getIntent().getExtras()).get(Constant.IMAGE);
-                mImageFile = (ImageFile) getIntent().getExtras().getSerializable(Constant.IMAGE);
-                if (mImageFile != null) {
+            MediaFiles mf = (MediaFiles) getIntent().getSerializableExtra(Constant.MEDIA_FILE);
+
+            if(mf != null){
+                if(mf.getmFileType().equals(Constant.IMAGE)){
+                    setVisibilityStatus(View.VISIBLE, View.GONE);
+                    mImageFile = (ImageFile) mf;
+                    mIsImage = true;
                     showMediaFile(true);
-                }
-            }else {
-                setVisibilityStatus(View.GONE, View.VISIBLE);
-                //mVideoFile = (VideoFile) Objects.requireNonNull(getIntent().getExtras()).get(Constant.VIDEO);
-                mVideoFile = (VideoFile) getIntent().getExtras().getSerializable(Constant.VIDEO);
-                if (mVideoFile != null) {
+                }else {
+                    setVisibilityStatus(View.GONE, View.VISIBLE);
+                    mVideoFile = (VideoFile) mf;
+                    mIsImage = false;
                     showMediaFile(false);
                 }
             }
+
         }
 
     }
@@ -292,4 +292,11 @@ public class MediaActivity extends AppCompatActivity
 
         mDeleteItemDialogFragment.dismiss();
     }
+
+    @Override
+    public boolean onPrepareOptionsMenu(final Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
 }

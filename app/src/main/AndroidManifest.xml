@@ -17,19 +17,19 @@
         android:roundIcon="@drawable/vic_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <activity android:name=".MediaActivity"
-            android:parentActivityName=".MainActivity"/>
-
         <activity android:name=".MainActivity"
-            android:launchMode="singleInstance">
+            android:launchMode="singleInstance"/>
+        <activity
+            android:name=".MediaActivity"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>

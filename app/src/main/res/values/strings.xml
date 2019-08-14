@@ -29,4 +29,6 @@
     <string name="save">Save</string>
     <string name="share">Share</string>
     <string name="select_all">Select All</string>
+    <string name="wlc_msg">Welcome To VIC</string>
+    <string name="get_started">Let\'s Gets Started</string>
 </resources>

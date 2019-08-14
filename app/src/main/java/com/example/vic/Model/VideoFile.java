@@ -2,7 +2,9 @@ package com.example.vic.Model;
 
 import android.net.Uri;
 
-public class VideoFile extends MediaFiles {
+import java.io.Serializable;
+
+public class VideoFile extends MediaFiles implements Serializable {
 
     public VideoFile() {}
 
