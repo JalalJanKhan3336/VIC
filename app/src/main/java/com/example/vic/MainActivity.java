@@ -43,6 +43,7 @@ import com.example.vic.Model.ImageFile;
 import com.example.vic.Model.MediaFiles;
 import com.example.vic.Model.VideoFile;
 import com.example.vic.Utils.MessageUtils;
+import com.example.vic.Utils.MoverUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
@@ -219,8 +220,9 @@ public class MainActivity extends AppCompatActivity
             item.setOnCreateContextMenuListener(this);
 
         }else {
-            //MoverUtils.moveTo(MainActivity.this, MediaActivity.class, Constant.MEDIA_FILE, mediaFile);
-            move(mediaFile);
+            Constant.mTempFile = mediaFile;
+            MoverUtils.moveTo(MainActivity.this, MediaActivity.class);
+            //move(mediaFile);
         }
     }
 

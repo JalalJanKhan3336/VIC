@@ -1,6 +1,7 @@
 package com.example.vic.Adapters;
 
 import android.content.Context;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,7 +9,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -92,14 +92,23 @@ public class MediaFilesAdapter extends RecyclerView.Adapter<MediaFilesAdapter.Me
 
     // End Point: Trigger Action on RecyclerView item clicked, swipe
     private void clickOnItem(MediaFileViewHolder holder, int position) {
-        final MediaFiles obj = mMediaFilesList.get(position);
+        MediaFiles obj = mMediaFilesList.get(position);
 
         // When an Item Clicked
-        holder.itemView.setOnClickListener(view -> mMediaFileListener.onItemClicked(obj, holder.itemView, position));
+        holder.itemView.setOnClickListener(view -> {
+            if(obj.getmFileExtension().equals(".mp4")){
+                obj.setmFileType(Constant.VIDEO);
+            }else {
+                obj.setmFileType(Constant.IMAGE);
+            }
+
+            mMediaFileListener.onItemClicked(obj, view, position);
+        });
 
         // When an Item Long Clicked
         holder.itemView.setOnLongClickListener(view -> {
-            mMediaFileListener.onItemLongClicked(obj, holder.itemView, position);
+            mMediaFileListener.onItemLongClicked(obj, view, position);
+            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
             return true;
         });
 

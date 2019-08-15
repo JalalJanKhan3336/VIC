@@ -35,8 +35,7 @@ public class MediaActivity extends AppCompatActivity
         implements DialogClickListener {
 
     // Custom Ref
-    private ImageFile mImageFile;
-    private VideoFile mVideoFile;
+    private MediaFiles mMediaFile;
     private DeleteItemDialogFragment mDeleteItemDialogFragment;
 
     // Views
@@ -56,45 +55,33 @@ public class MediaActivity extends AppCompatActivity
 
         initView();
         initRef();
-        setUpToolbar();
 
-        if(getIntent() != null && getIntent().getExtras() != null){
+        //if(getIntent() != null && getIntent().getExtras() != null){
 
-            MediaFiles mf = (MediaFiles) getIntent().getSerializableExtra(Constant.MEDIA_FILE);
+            //MediaFiles mf = (MediaFiles) getIntent().getSerializableExtra(Constant.MEDIA_FILE);
 
-            if(mf != null){
-                if(mf.getmFileType().equals(Constant.IMAGE)){
-                    setVisibilityStatus(View.VISIBLE, View.GONE);
-                    mImageFile = (ImageFile) mf;
-                    mIsImage = true;
-                    showMediaFile(true);
-                }else {
-                    setVisibilityStatus(View.GONE, View.VISIBLE);
-                    mVideoFile = (VideoFile) mf;
-                    mIsImage = false;
-                    showMediaFile(false);
-                }
+        mMediaFile = Constant.mTempFile;
+
+        if(mMediaFile != null){
+            if(mMediaFile.getmFileType().equals(Constant.IMAGE)){
+                setVisibilityStatus(View.VISIBLE, View.GONE);
+                mIsImage = true;
+                showMediaFile(true);
+            }else {
+                setVisibilityStatus(View.GONE, View.VISIBLE);
+                mIsImage = false;
+                showMediaFile(false);
             }
-
         }
 
+        setUpToolbar();
+        //}
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu,menu);
-        visibleMenuItems(menu);
+        getMenuInflater().inflate(R.menu.second_menu,menu);
         return true;
-    }
-
-    private void visibleMenuItems(Menu menu) {
-        MenuItem shareItem = menu.getItem(R.id.action_share);
-        MenuItem deleteItem = menu.getItem(R.id.action_delete);
-        MenuItem selectAllItem = menu.getItem(R.id.action_select_all);
-
-        shareItem.setVisible(true);
-        deleteItem.setVisible(true);
-        selectAllItem.setVisible(true);
     }
 
     @Override
@@ -129,10 +116,7 @@ public class MediaActivity extends AppCompatActivity
     private void share() {
         File file;
 
-        if(mIsImage)
-            file = new File(mImageFile.getmFilePath());
-        else
-            file = new File(mVideoFile.getmFilePath());
+        file = new File(mMediaFile.getmFilePath());
 
         Uri uri = Uri.fromFile(file);
 
@@ -152,7 +136,6 @@ public class MediaActivity extends AppCompatActivity
         Bundle bundle = new Bundle();
         bundle.putInt(Constant.SIZE, 1);
         mDeleteItemDialogFragment.setArguments(bundle);
-
         mDeleteItemDialogFragment.show(getSupportFragmentManager(), mDeleteItemDialogFragment.getTag());
     }
 
@@ -161,16 +144,8 @@ public class MediaActivity extends AppCompatActivity
         setSupportActionBar(mToolbar);
 
         if(getSupportActionBar() != null){
-            String title;
-            String subTitle;
-
-            if(mIsImage){
-                title = mImageFile.getmFileName();
-                subTitle = Constant.SIZE + mImageFile.getmFileSizeInMB() + Constant.MB;
-            }else{
-                title = mImageFile.getmFileName();
-                subTitle = Constant.SIZE + mVideoFile.getmFileSizeInMB() + Constant.MB;
-            }
+            String title = mMediaFile.getmFileName();
+            String subTitle = Constant.SIZE + mMediaFile.getmFileSizeInMB() + Constant.MB;
 
             getSupportActionBar().setTitle(title);
             getSupportActionBar().setSubtitle(subTitle);
@@ -207,11 +182,11 @@ public class MediaActivity extends AppCompatActivity
     private void showMediaFile(boolean isImage) {
         if(isImage){
             setVisibilityStatus(View.VISIBLE, View.GONE);
-            GlideUtils.loadImageAsBitmap(this, mImageFile.getmFilePath(), mImageHolder);
+            GlideUtils.loadImageAsBitmap(this, mMediaFile.getmFilePath(), mImageHolder);
         }else {
             setVisibilityStatus(View.GONE, View.VISIBLE);
             mVideoHolder.setZOrderOnTop(true);
-            mVideoHolder.setVideoURI(mVideoFile.getmFileUri());
+            mVideoHolder.setVideoURI(mMediaFile.getmFileUri());
             setUpMediaController();
         }
 
@@ -274,29 +249,15 @@ public class MediaActivity extends AppCompatActivity
 
     @Override
     public void onButtonClicked(String whichButton, String fileType, MediaFiles item) {
-        if(whichButton.equals(Constant.DELETE_BUTTON) && fileType.equals(Constant.IMAGE)){
-            if(BitmapManager.with(MediaActivity.this).deleteThisFile(mImageFile.getmFilePath())) {
-                MessageUtils.displayToast(MediaActivity.this, mImageFile.getmFileName() + " is deleted");
+        if(whichButton.equals(Constant.DELETE_BUTTON)){
+            if(BitmapManager.with(MediaActivity.this).deleteThisFile(mMediaFile.getmFilePath())) {
+                MessageUtils.displayToast(MediaActivity.this, mMediaFile.getmFileName() + " is deleted");
                 finish();
             } else
-                MessageUtils.displayToast(MediaActivity.this, mImageFile.getmFileName()+" is unable to delete");
-        }
-
-        if(whichButton.equals(Constant.DELETE_BUTTON) && fileType.equals(Constant.VIDEO)){
-            if(BitmapManager.with(MediaActivity.this).deleteThisFile(mVideoFile.getmFilePath())) {
-                MessageUtils.displayToast(MediaActivity.this, mVideoFile.getmFileName() + " is deleted");
-                finish();
-            } else
-                MessageUtils.displayToast(MediaActivity.this, mVideoFile.getmFileName()+" is unable to delete");
+                MessageUtils.displayToast(MediaActivity.this, mMediaFile.getmFileName()+" is unable to delete");
         }
 
         mDeleteItemDialogFragment.dismiss();
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(final Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return super.onCreateOptionsMenu(menu);
     }
 
 }

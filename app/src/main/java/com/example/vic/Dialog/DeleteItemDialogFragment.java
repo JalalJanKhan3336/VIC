@@ -48,7 +48,7 @@ public class DeleteItemDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        setCancelable(false);
+        setCancelable(true);
 
         initView(view);
         clickOnView();

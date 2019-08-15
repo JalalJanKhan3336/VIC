@@ -2,6 +2,8 @@ package com.example.vic.Common;
 
 import android.os.Environment;
 
+import com.example.vic.Model.MediaFiles;
+
 import java.io.File;
 
 public abstract class Constant {
@@ -45,5 +47,7 @@ public abstract class Constant {
     // Storage Folders
     private static final String ROOT_DIR = Environment.getExternalStorageDirectory().toString();
     public  static final File VIC_FOLDER = new File(ROOT_DIR+"/VIC");
+
+    public static MediaFiles mTempFile;
 
 }
