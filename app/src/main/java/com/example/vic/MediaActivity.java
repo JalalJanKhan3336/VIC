@@ -3,6 +3,7 @@ package com.example.vic;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -114,11 +115,9 @@ public class MediaActivity extends AppCompatActivity
 
     // End Point: Sharing Selected Item
     private void share() {
-        File file;
+        //Uri uri = FileProvider.getUriForFile(this,getApplicationContext().getPackageName()+".provider", file);
 
-        file = new File(mMediaFile.getmFilePath());
-
-        Uri uri = Uri.fromFile(file);
+        Uri uri = mMediaFile.getmFileUri();
 
         if(uri != null){
             Intent intent = new Intent(Intent.ACTION_SEND);

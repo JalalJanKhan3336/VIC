@@ -1,9 +1,9 @@
 package com.example.vic;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -17,15 +17,15 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.text.TextUtils;
-import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 
 import com.example.vic.Adapters.MediaFilesAdapter;
+import com.example.vic.Async.ShareMediaFiles;
 import com.example.vic.Common.Constant;
 import com.example.vic.Dialog.ChooseActionFragment;
 import com.example.vic.Dialog.CompressorDialogFragment;
@@ -52,7 +52,6 @@ import net.alhazmy13.mediapicker.Image.ImagePicker;
 import net.alhazmy13.mediapicker.Video.VideoPicker;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +68,7 @@ public class MainActivity extends AppCompatActivity
 
     // Views
     private Toolbar mToolbar;
-    //private Menu mMainMenu;
+    private ActionMode mActionMode = null;
     private RecyclerView mRecyclerView;
     private FloatingActionButton mNewCompressionFAB;
 
@@ -93,10 +92,70 @@ public class MainActivity extends AppCompatActivity
     private CompressorDialogFragment mCompressorDialogFragment;
     private static int mCounter = 0;
 
+    // ActionMode Callback Ref
+    private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+
+            MenuInflater menuInflater = mode.getMenuInflater();
+            menuInflater.inflate(R.menu.main_menu, menu);
+            mode.setTitle(mCounter +" Items Selected");
+
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            boolean flag = false;
+
+            int id = item.getItemId();
+
+            switch (id){
+
+                case R.id.action_share:{
+                    if(mSelectedMediaFiles.size() > 0){
+                        share(mSelectedMediaFiles);
+                        mSelectedMediaFiles.clear();
+                    }
+                    else
+                        MessageUtils.displayToast(MainActivity.this, "Nothing Selected");
+
+                    flag = true;
+                    break;
+                }
+                case R.id.action_delete:{
+                    if(mSelectedMediaFiles.size() > 0){
+
+                        delete(mSelectedMediaFiles);
+                    }
+                    else
+                        MessageUtils.displayToast(MainActivity.this, "Nothing Selected");
+
+                    flag = true;
+                    break;
+                }
+                default:
+                    break;
+            }
+
+            return flag;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            mActionMode = null;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.dummy_layout);
+        setContentView(R.layout.activity_main);
 
         initView();
         initRef();
@@ -222,7 +281,6 @@ public class MainActivity extends AppCompatActivity
         }else {
             Constant.mTempFile = mediaFile;
             MoverUtils.moveTo(MainActivity.this, MediaActivity.class);
-            //move(mediaFile);
         }
     }
 
@@ -245,14 +303,11 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        item.setOnCreateContextMenuListener(this);
-    }
+        if(mCounter > 0){
+            if(mActionMode == null)
+                mActionMode = startSupportActionMode(mActionModeCallback);
+        }
 
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        menu.setHeaderTitle(mCounter +" Items Selected");
-        getMenuInflater().inflate(R.menu.main_menu, menu);
     }
 
     @Override
@@ -605,19 +660,27 @@ public class MainActivity extends AppCompatActivity
     }
 
     // End Point: Sharing Selected Item
-    private void share(MediaFiles mf) {
+    private void share(List<MediaFiles> files) {
 
-        File file = new File(mf.getmFilePath());
+        new ShareMediaFiles(this, "VIC/*").execute(files);
 
-        Uri uri = Uri.fromFile(file);
-
-        if(uri != null){
-            Intent intent = new Intent(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_STREAM, uri);
-            startActivity(Intent.createChooser(intent, "Share via"));
-        }else {
-            MessageUtils.displayToast(this,"Unable to Share this file now");
-        }
+//        Intent shareIntent = new Intent();
+//        shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+//        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris);
+//        shareIntent.setType("image/*");
+//        startActivity(Intent.createChooser(shareIntent, "Share images to.."));
+//
+//        File file = new File(mf.getmFilePath());
+//
+//        Uri uri = Uri.fromFile(file);
+//
+//        if(uri != null){
+//            Intent intent = new Intent(Intent.ACTION_SEND);
+//            intent.putExtra(Intent.EXTRA_STREAM, uri);
+//            startActivity(Intent.createChooser(intent, "Share via"));
+//        }else {
+//            MessageUtils.displayToast(this,"Unable to Share this file now");
+//        }
 
     }
 
@@ -627,46 +690,6 @@ public class MainActivity extends AppCompatActivity
         bundle.putInt(Constant.SIZE, files.size());
         mDeleteDialogFragment.setArguments(bundle);
         mDeleteDialogFragment.show(getSupportFragmentManager(), mDeleteDialogFragment.getTag());
-    }
-
-    @Override
-    public boolean onContextItemSelected(@NonNull MenuItem item) {
-        boolean flag = false;
-
-        int id = item.getItemId();
-
-        switch (id){
-
-            case R.id.action_share:{
-                if(mSelectedMediaFiles.size() > 0){
-                    for(MediaFiles mf : mSelectedMediaFiles){
-                        share(mf);
-                    }
-
-                    mSelectedMediaFiles.clear();
-                }
-                else
-                    MessageUtils.displayToast(MainActivity.this, "Nothing Selected");
-
-                flag = true;
-                break;
-            }
-            case R.id.action_delete:{
-                if(mSelectedMediaFiles.size() > 0){
-
-                    delete(mSelectedMediaFiles);
-                }
-                else
-                    MessageUtils.displayToast(MainActivity.this, "Nothing Selected");
-
-                flag = true;
-                break;
-            }
-            default:
-                break;
-        }
-
-        return flag;
     }
 
 }
