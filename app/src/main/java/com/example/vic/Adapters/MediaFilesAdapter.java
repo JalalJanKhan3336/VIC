@@ -5,6 +5,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,6 +18,9 @@ import com.example.vic.Listener.ItemClickListener;
 import com.example.vic.Model.MediaFiles;
 import com.example.vic.R;
 import com.example.vic.Utils.GlideUtils;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 
 import java.text.DecimalFormat;
 import java.util.List;
@@ -29,24 +33,8 @@ public class MediaFilesAdapter extends RecyclerView.Adapter<MediaFilesAdapter.Me
     // Interface Reference
     private ItemClickListener mMediaFileListener;
 
-    // When Item Swiped left or right
-    private final ItemTouchHelper.SimpleCallback mSimpleCallback = new
-            ItemTouchHelper.SimpleCallback(0,
-                    ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-                @Override
-                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                    return false;
-                }
-
-                @Override
-                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                    MediaFiles file = mMediaFilesList.get(viewHolder.getAdapterPosition());
-
-                    setDataToListener(file);
-
-                    notifyDataSetChanged();
-                }
-            };
+    private static final int AD_TYPE = 1;
+    private static final int CONTENT_TYPE = 2;
 
     public MediaFilesAdapter(Context mContext, List<MediaFiles> mMediaFilesList, ItemClickListener mMediaFileListener) {
         this.mContext = mContext;
@@ -58,31 +46,53 @@ public class MediaFilesAdapter extends RecyclerView.Adapter<MediaFilesAdapter.Me
     @NonNull
     @Override
     public MediaFileViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(mContext).inflate(R.layout.media_file_item, parent, false);
+        View itemView;
+
+        if(viewType == AD_TYPE){
+            itemView = new AdView(mContext);
+            ((AdView) itemView).setAdSize(AdSize.BANNER);
+            ((AdView) itemView).setAdUnitId(mContext.getString(R.string.banner_ad_id));
+
+            float density = mContext.getResources().getDisplayMetrics().density;
+            int height = Math.round(AdSize.BANNER.getHeight() * density);
+            AbsListView.LayoutParams params = new AbsListView.LayoutParams(AbsListView.LayoutParams.FILL_PARENT,height);
+            itemView.setLayoutParams(params);
+
+            AdRequest adRequest = new AdRequest.Builder().build();
+            ((AdView) itemView).loadAd(adRequest);
+        }else {
+           itemView = LayoutInflater.from(mContext).inflate(R.layout.media_file_item, parent, false);
+        }
+
         return new MediaFileViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MediaFileViewHolder holder, int position) {
-        MediaFiles obj = mMediaFilesList.get(position);
+        int viewType = getItemViewType(position);
 
-        GlideUtils.loadCircularImageAsBitmap(mContext, obj.getmFilePath(), holder.mThumbnailHolder);
+        if(viewType == CONTENT_TYPE){
+            MediaFiles obj = mMediaFilesList.get(position);
 
-        DecimalFormat df = new DecimalFormat("#.###");
-        double d = Double.valueOf(df.format(obj.getmFileSizeInMB()));
+            GlideUtils.loadCircularImageAsBitmap(mContext, obj.getmFilePath(), holder.mThumbnailHolder);
 
-        String size = Constant.SIZE + d + Constant.MB;
-        String type = Constant.FILE_TYPE + obj.getmFileExtension();
-        String path = Constant.PATH + obj.getmFilePath();
+            DecimalFormat df = new DecimalFormat("#.###");
+            double d = Double.valueOf(df.format(obj.getmFileSizeInMB()));
 
-        holder.mSizeHolder.setText(size);
-        holder.mTypeHolder.setText(type);
-        holder.mPathHolder.setText(path);
-        holder.mTitleHolder.setText(obj.getmFileName());
-        holder.mDateHolder.setText(obj.getmFileCompressionDate());
-        holder.mTimeHolder.setText(obj.getmFileCompressionTime());
+            String size = Constant.SIZE + d + Constant.MB;
+            String type = Constant.FILE_TYPE + obj.getmFileExtension();
+            String path = Constant.PATH + obj.getmFilePath();
 
-        clickOnItem(holder, position);
+            holder.mSizeHolder.setText(size);
+            holder.mTypeHolder.setText(type);
+            holder.mPathHolder.setText(path);
+            holder.mTitleHolder.setText(obj.getmFileName());
+            holder.mDateHolder.setText(obj.getmFileCompressionDate());
+            holder.mTimeHolder.setText(obj.getmFileCompressionTime());
+
+            clickOnItem(holder, position);
+        }
+
     }
 
     @Override
@@ -114,8 +124,12 @@ public class MediaFilesAdapter extends RecyclerView.Adapter<MediaFilesAdapter.Me
 
     }
 
-    private void setDataToListener(MediaFiles file) {
-        mMediaFileListener.onItemSwiped(file, mSimpleCallback);
+    @Override
+    public int getItemViewType(int position) {
+        if(position > 0 && position % 5 == 0)
+            return AD_TYPE;
+
+        return CONTENT_TYPE;
     }
 
     class MediaFileViewHolder extends RecyclerView.ViewHolder {

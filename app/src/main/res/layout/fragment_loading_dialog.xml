@@ -20,6 +20,7 @@
         android:id="@+id/parent_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@android:color/white"
         android:padding="@dimen/norm_pad">
 
         <!-- Progressbar -->
@@ -28,10 +29,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:indeterminate="true"
-            app:layout_constraintStart_toStartOf="@+id/parent_layout"
-            app:layout_constraintTop_toTopOf="@+id/parent_layout"
+            app:layout_constraintBottom_toBottomOf="@+id/parent_layout"
             app:layout_constraintEnd_toStartOf="@+id/guideline2"
-            app:layout_constraintBottom_toBottomOf="@+id/parent_layout"/>
+            app:layout_constraintStart_toStartOf="@+id/parent_layout"
+            app:layout_constraintTop_toTopOf="@+id/parent_layout" />
 
         <!-- Icon Holder -->
         <ImageView
@@ -42,10 +43,10 @@
             android:scaleType="centerCrop"
             android:src="@drawable/vic_logo"
             android:visibility="gone"
-            app:layout_constraintStart_toStartOf="@+id/parent_layout"
-            app:layout_constraintTop_toTopOf="@+id/parent_layout"
+            app:layout_constraintBottom_toBottomOf="@+id/parent_layout"
             app:layout_constraintEnd_toStartOf="@+id/guideline2"
-            app:layout_constraintBottom_toBottomOf="@+id/parent_layout"/>
+            app:layout_constraintStart_toStartOf="@+id/parent_layout"
+            app:layout_constraintTop_toTopOf="@+id/parent_layout" />
 
         <!-- Title Holder -->
         <TextView
@@ -77,8 +78,8 @@
             android:id="@+id/re_compress_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_bg"
             android:layout_marginTop="@dimen/xsm_margin"
+            android:background="@drawable/btn_bg"
             android:paddingStart="@dimen/xsm_pad"
             android:paddingEnd="@dimen/xsm_pad"
             android:text="@string/re_compress"
@@ -94,8 +95,8 @@
             android:id="@+id/save_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_trans_bg"
             android:layout_marginTop="@dimen/xsm_margin"
+            android:background="@drawable/btn_trans_bg"
             android:paddingStart="@dimen/xsm_pad"
             android:paddingEnd="@dimen/xsm_pad"
             android:text="@string/save"
@@ -111,7 +112,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_begin="50dp" />
+            app:layout_constraintGuide_begin="60dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

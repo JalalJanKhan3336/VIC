@@ -107,7 +107,7 @@ public class LoadingDialogFragment extends DialogFragment {
         });
     }
 
-    public void onResult(int icon, String title, String msg, boolean showIcon){
+    private void onResult(int icon, String title, String msg, boolean showIcon){
         if(mResultType != null){
 
             if(showIcon){
@@ -140,9 +140,12 @@ public class LoadingDialogFragment extends DialogFragment {
                 if(mResultType.equals(Constant.SUCCESS)) {
                     mSaveButton.setVisibility(View.VISIBLE);
                     mReCompressButton.setVisibility(View.GONE);
-                }else {
+                }else if(mResultType.equals(Constant.FAILURE)) {
                     mSaveButton.setVisibility(View.GONE);
                     mReCompressButton.setVisibility(View.VISIBLE);
+                }else {
+                    mSaveButton.setVisibility(View.GONE);
+                    mReCompressButton.setVisibility(View.GONE);
                 }
             }
         }

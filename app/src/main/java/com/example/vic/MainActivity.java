@@ -1,10 +1,12 @@
 package com.example.vic;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -25,7 +27,6 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.example.vic.Adapters.MediaFilesAdapter;
-import com.example.vic.Async.ShareMediaFiles;
 import com.example.vic.Common.Constant;
 import com.example.vic.Dialog.ChooseActionFragment;
 import com.example.vic.Dialog.CompressorDialogFragment;
@@ -44,6 +45,10 @@ import com.example.vic.Model.MediaFiles;
 import com.example.vic.Model.VideoFile;
 import com.example.vic.Utils.MessageUtils;
 import com.example.vic.Utils.MoverUtils;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
@@ -64,7 +69,8 @@ public class MainActivity extends AppCompatActivity
     // Final Var
     private static final int BROWSE_IMAGE_CODE  = 2;
     private static final int BROWSE_VIDEO_CODE  = 4;
-    private static final int DARK_GRAY_COLOR = Color.parseColor("#333333");
+    private static final int DARK_GRAY_COLOR = Color.parseColor("#2B2B2B");
+    private static final String ITEMS_SELECTED = " Items Selected";
 
     // Views
     private Toolbar mToolbar;
@@ -73,14 +79,22 @@ public class MainActivity extends AppCompatActivity
     private FloatingActionButton mNewCompressionFAB;
 
     // Local Vars
+    private int mCounter = 0;
     private boolean mIsImage = true;
-    private MediaFiles mMediaFile;
-    private List<MediaFiles> mSelectedMediaFiles;
+    private boolean mIsViewFile = false;
+    private boolean mShowDialog = false;
+    private boolean mAllSelected = false;
 
     // Custom References
     private List<MediaFiles> mMediaFileList;
     private BitmapManager mBitmapManager;
     private PermissionManager mPermissionManager;
+    private MediaFiles mMediaFile;
+    private List<MediaFiles> mSelectedMediaFiles;
+
+    // Admob Ref
+    private InterstitialAd mInterstitialAd;
+    private AdRequest mAdRequest;
 
     // Adapters Ref
     private MediaFilesAdapter mMediaFilesAdapter;
@@ -90,16 +104,36 @@ public class MainActivity extends AppCompatActivity
     private ChooseActionFragment mChooseActionFragment;
     private LoadingDialogFragment mLoadingDialogFragment;
     private CompressorDialogFragment mCompressorDialogFragment;
-    private static int mCounter = 0;
+
+    // AdListener Ref
+    private AdListener mAdListenerRef = new AdListener(){
+        @Override
+        public void onAdLoaded() {
+            super.onAdLoaded();
+        }
+
+        @Override
+        public void onAdClosed() {
+            super.onAdClosed();
+
+            if(mIsViewFile && !mShowDialog)
+                MoverUtils.moveTo(MainActivity.this, MediaActivity.class);
+            else if(!mIsViewFile && mShowDialog)
+                mChooseActionFragment.show(getSupportFragmentManager(), mChooseActionFragment.getTag());
+        }
+
+
+    };
 
     // ActionMode Callback Ref
     private ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 
             MenuInflater menuInflater = mode.getMenuInflater();
             menuInflater.inflate(R.menu.main_menu, menu);
-            mode.setTitle(mCounter +" Items Selected");
+            mode.setTitle(mCounter + ITEMS_SELECTED);
 
             return true;
         }
@@ -116,6 +150,21 @@ public class MainActivity extends AppCompatActivity
             int id = item.getItemId();
 
             switch (id){
+
+                case R.id.action_select_all:{
+
+                    if(!mAllSelected) {
+                        mAllSelected = true;
+                        selectAll();
+                    }
+                    else {
+                        mAllSelected = false;
+                        deselectAll();
+                    }
+
+                    flag = true;
+                    break;
+                }
 
                 case R.id.action_share:{
                     if(mSelectedMediaFiles.size() > 0){
@@ -148,9 +197,56 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public void onDestroyActionMode(ActionMode mode) {
+            deselectAll();
+            mCounter = 0;
             mActionMode = null;
         }
     };
+
+    // End Point: Select All Items in RecyclerView
+    private void selectAll() {
+        for(MediaFiles mf : mMediaFileList){
+            int position = mMediaFileList.indexOf(mf);
+            RecyclerView.ViewHolder holder = mRecyclerView.findViewHolderForAdapterPosition(position);
+
+            MediaFiles mediaFile = mMediaFileList.get(position);
+
+            if(holder != null){
+                if(!mSelectedMediaFiles.contains(mediaFile)){
+                    holder.itemView.setBackgroundColor(Color.GRAY);
+                    mSelectedMediaFiles.add(mediaFile);
+                    mCounter++;
+
+                    mActionMode.setTitle(mCounter + ITEMS_SELECTED);
+                }
+            }
+        }
+
+    }
+
+    // End Point: Deselect All Items in RecyclerView
+    private void deselectAll() {
+        if(mSelectedMediaFiles.size() > 0){
+            for(MediaFiles mf : mMediaFileList){
+                int position = mMediaFileList.indexOf(mf);
+                RecyclerView.ViewHolder holder = mRecyclerView.findViewHolderForAdapterPosition(position);
+
+                MediaFiles mediaFile = mMediaFileList.get(position);
+
+                if(holder != null){
+                    if(mSelectedMediaFiles.contains(mediaFile)){
+                        holder.itemView.setBackgroundColor(DARK_GRAY_COLOR);
+                        mSelectedMediaFiles.remove(mediaFile);
+                        mCounter--;
+                        mActionMode.setTitle(mCounter + ITEMS_SELECTED);
+                    }
+
+                }
+            }
+
+            mSelectedMediaFiles.clear();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,6 +257,8 @@ public class MainActivity extends AppCompatActivity
         initRef();
         clickOnButton();
         setUpToolbar();
+
+        MobileAds.initialize(MainActivity.this, getString(R.string.admob_app_id));
 
         mPermissionManager.askPermissions();
     }
@@ -176,6 +274,13 @@ public class MainActivity extends AppCompatActivity
     private void initRef() {
         mMediaFileList = new ArrayList<>();
         mSelectedMediaFiles = new ArrayList<>();
+
+        mAdRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
+
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId(getString(R.string.interstitial_ad_id));
+        mInterstitialAd.loadAd(mAdRequest);
+        mInterstitialAd.setAdListener(mAdListenerRef);
 
         mBitmapManager = BitmapManager.with(this);
         mBitmapManager.setCompressorListener(this);
@@ -205,7 +310,19 @@ public class MainActivity extends AppCompatActivity
 
     // End Point: Trigger Action when FAB is clicked
     private void clickOnButton() {
-        mNewCompressionFAB.setOnClickListener(view -> mChooseActionFragment.show(getSupportFragmentManager(), mChooseActionFragment.getTag()));
+        mNewCompressionFAB.setOnClickListener(view -> {
+            if(mInterstitialAd.isLoaded()) {
+                mIsViewFile = false;
+                mShowDialog = true;
+                mInterstitialAd.show();
+            }
+            else {
+                mIsViewFile = false;
+                mShowDialog = false;
+                mCompressorDialogFragment.show(getSupportFragmentManager(), mCompressorDialogFragment.getTag());
+            }
+        });
+
     }
 
     // End Point: Setting up Toolbar
@@ -227,21 +344,27 @@ public class MainActivity extends AppCompatActivity
 
     // End Point: Populating List of Image & Video Files
     private void populateList() {
-        List<String> filesPath = mBitmapManager.getAllMediaFiles(Constant.VIC_FOLDER);
+        Runnable runnable = () -> {
 
-        if(mMediaFileList != null)
-            mMediaFileList.clear();
+            List<String> filesPath = mBitmapManager.getAllMediaFiles(Constant.VIC_FOLDER);
 
-        if(filesPath != null){
+            if(mMediaFileList != null)
+                mMediaFileList.clear();
 
-            for(String path : filesPath){
-                MediaFiles file = mBitmapManager.extractMediaDetails(path);
-                if(file != null){
-                    mMediaFileList.add(file);
+            if(filesPath != null){
+
+                for(String path : filesPath){
+                    MediaFiles file = mBitmapManager.extractMediaDetails(path);
+                    if(file != null){
+                        mMediaFileList.add(file);
+                    }
                 }
+
             }
 
-        }
+        };
+
+        new Thread(runnable).start();
 
         populateRecyclerView();
     }
@@ -259,6 +382,7 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(llm);
+        new ItemTouchHelper(mSimpleCallback).attachToRecyclerView(mRecyclerView);
         mRecyclerView.setAdapter(mMediaFilesAdapter);
     }
 
@@ -276,12 +400,23 @@ public class MainActivity extends AppCompatActivity
                 mCounter++;
             }
 
-            item.setOnCreateContextMenuListener(this);
-
         }else {
-            Constant.mTempFile = mediaFile;
-            MoverUtils.moveTo(MainActivity.this, MediaActivity.class);
+            if(mInterstitialAd.isLoaded()) {
+                mIsViewFile = true;
+                mShowDialog = false;
+                Constant.mTempFile = mediaFile;
+                mInterstitialAd.show();
+            }
+            else {
+                mIsViewFile = false;
+                mShowDialog = false;
+                Constant.mTempFile = mediaFile;
+                MoverUtils.moveTo(MainActivity.this, MediaActivity.class);
+            }
         }
+
+        if(mActionMode != null)
+            mActionMode.setTitle(mCounter + ITEMS_SELECTED);
     }
 
     @Override
@@ -304,18 +439,9 @@ public class MainActivity extends AppCompatActivity
         }
 
         if(mCounter > 0){
-            if(mActionMode == null)
-                mActionMode = startSupportActionMode(mActionModeCallback);
+            mActionMode = startSupportActionMode(mActionModeCallback);
         }
 
-    }
-
-    @Override
-    public void onItemSwiped(MediaFiles mediaFile, ItemTouchHelper.SimpleCallback itemSwipedCallback) {
-        new ItemTouchHelper(itemSwipedCallback).attachToRecyclerView(mRecyclerView);
-        List<MediaFiles> mediaFiles = new ArrayList<>();
-        mediaFiles.add(mediaFile);
-        delete(mediaFiles);
     }
 
     @Override
@@ -342,13 +468,16 @@ public class MainActivity extends AppCompatActivity
             else
                 MessageUtils.displaySnackbar(mRecyclerView,"Unable to delete a single File");
 
+            if(mActionMode != null){
+                mActionMode = null;
+            }
+
         }else if(whichButton.equals(Constant.COMPRESS_BUTTON) && fileType != null){
 
             if(fileType.equals(Constant.IMAGE)){
                 showLoadingDialog("Please Wait","Compressing file, please wait...", null);
                 mBitmapManager.compress(true, item.getmFilePath(), Constant.VIC_FOLDER);
-            }
-            if(fileType.equals(Constant.VIDEO)){
+            }else {
                 showLoadingDialog("Please Wait","Compressing file, please wait...", null);
                 mBitmapManager.compress(false, item.getmFilePath(), Constant.VIC_FOLDER);
             }
@@ -379,13 +508,6 @@ public class MainActivity extends AppCompatActivity
             default:
                 break;
         }
-    }
-
-    // End Point: Setup Bundle & Move to Media Activity
-    private void move(MediaFiles mediaFile) {
-        Intent intent = new Intent(MainActivity.this, MediaActivity.class);
-        intent.putExtra(Constant.MEDIA_FILE, mediaFile);
-        startActivity(intent);
     }
 
     // End Point: Capture single Image
@@ -636,6 +758,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onSave() {
+
+        if(mInterstitialAd.isLoaded())
+            mInterstitialAd.show();
+
         if(mIsImage)
             askName(true, mMediaFile);
         else
@@ -662,26 +788,46 @@ public class MainActivity extends AppCompatActivity
     // End Point: Sharing Selected Item
     private void share(List<MediaFiles> files) {
 
-        new ShareMediaFiles(this, "VIC/*").execute(files);
+        if(files.size() == 1){
+            shareSingleFile(files.get(0));
+        }else if(files.size() > 1){
+            shareMultipleFiles(files);
+        }else {
+            MessageUtils.displayToast(this,"Unable to share right now");
+        }
 
-//        Intent shareIntent = new Intent();
-//        shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
-//        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris);
-//        shareIntent.setType("image/*");
-//        startActivity(Intent.createChooser(shareIntent, "Share images to.."));
-//
-//        File file = new File(mf.getmFilePath());
-//
-//        Uri uri = Uri.fromFile(file);
-//
-//        if(uri != null){
-//            Intent intent = new Intent(Intent.ACTION_SEND);
-//            intent.putExtra(Intent.EXTRA_STREAM, uri);
-//            startActivity(Intent.createChooser(intent, "Share via"));
-//        }else {
-//            MessageUtils.displayToast(this,"Unable to Share this file now");
-//        }
+    }
 
+    // End Point: Share single Image/Video
+    private void shareSingleFile(MediaFiles mf) {
+        File file = new File(mf.getmFilePath());
+        Uri uri = FileProvider.getUriForFile(this,getApplicationContext().getPackageName()+".provider", file);
+
+        if(uri != null){
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("*/*");
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            startActivity(Intent.createChooser(intent, "Share via"));
+        }else {
+            MessageUtils.displayToast(this,"Unable to Share this file");
+        }
+
+    }
+
+    // End Point: Share multiple Images/Videos
+    private void shareMultipleFiles(List<MediaFiles> mediaFiles) {
+        ArrayList<Uri> uris = new ArrayList<>();
+
+        for(MediaFiles mf : mediaFiles){
+            File file = new File(mf.getmFilePath());
+            Uri uri = FileProvider.getUriForFile(this,getApplicationContext().getPackageName()+".provider", file);
+            uris.add(uri);
+        }
+
+        Intent intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_STREAM, uris);
+        startActivity(Intent.createChooser(intent, "Share via"));
     }
 
     // End Point: Deleting Selected Items
@@ -691,5 +837,32 @@ public class MainActivity extends AppCompatActivity
         mDeleteDialogFragment.setArguments(bundle);
         mDeleteDialogFragment.show(getSupportFragmentManager(), mDeleteDialogFragment.getTag());
     }
+
+
+    // End Point: Delete RecyclerView Item, when that Item is Swiped left or right
+    private final ItemTouchHelper.SimpleCallback mSimpleCallback = new
+            ItemTouchHelper.SimpleCallback(0,
+                    ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+                @Override
+                public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                    return false;
+                }
+
+                @Override
+                public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                    MediaFiles file = mMediaFileList.get(viewHolder.getAdapterPosition());
+
+                    if(mBitmapManager.deleteThisFile(file.getmFilePath())){
+                        int position = mMediaFileList.indexOf(file);
+
+                        mMediaFileList.remove(file);
+                        mMediaFilesAdapter.notifyItemRemoved(position);
+                        mMediaFilesAdapter.notifyDataSetChanged();
+                    }
+
+                    mMediaFilesAdapter.notifyDataSetChanged();
+                }
+            };
+
 
 }

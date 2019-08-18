@@ -70,19 +70,15 @@ public class CompressorDialogFragment extends DialogFragment {
         initView(view);
         clickOnView();
 
-        setVisibilityStatus(View.VISIBLE);
-
         if(getArguments() != null){
             mIsImage = getArguments().getBoolean(Constant.IS_IMAGE);
 
             if(mIsImage){
-                setVisibilityStatus(View.VISIBLE);
                 mImageFile = (ImageFile) getArguments().getSerializable(Constant.IMAGE);
                 if (mImageFile != null) {
                     populateFields(mImageFile);
                 }
             }else {
-                setVisibilityStatus(View.GONE);
                 mVideoFile = (VideoFile) getArguments().getSerializable(Constant.VIDEO);
                 if (mVideoFile != null) {
                     populateFields(mVideoFile);

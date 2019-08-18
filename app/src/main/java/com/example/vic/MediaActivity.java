@@ -115,12 +115,12 @@ public class MediaActivity extends AppCompatActivity
 
     // End Point: Sharing Selected Item
     private void share() {
-        //Uri uri = FileProvider.getUriForFile(this,getApplicationContext().getPackageName()+".provider", file);
-
-        Uri uri = mMediaFile.getmFileUri();
+        File file = new File(mMediaFile.getmFilePath());
+        Uri uri = FileProvider.getUriForFile(this,getApplicationContext().getPackageName()+".provider", file);
 
         if(uri != null){
             Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("*/*");
             intent.putExtra(Intent.EXTRA_STREAM, uri);
             startActivity(Intent.createChooser(intent, "Share via"));
         }else {

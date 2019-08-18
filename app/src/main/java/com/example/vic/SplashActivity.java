@@ -7,14 +7,12 @@ import androidx.transition.ChangeBounds;
 import androidx.transition.Transition;
 import androidx.transition.TransitionManager;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AnticipateOvershootInterpolator;
-import android.view.animation.OvershootInterpolator;
 import android.widget.Button;
 
-import com.example.vic.Handler.SharedPrefHandler;
 import com.example.vic.Utils.MoverUtils;
 
 public class SplashActivity extends AppCompatActivity {
@@ -24,13 +22,8 @@ public class SplashActivity extends AppCompatActivity {
     private final ConstraintSet mSplashLayoutSet = new ConstraintSet();
     private final ConstraintSet mSplashAltLayoutSet = new ConstraintSet();
 
-    // Custom Ref
-    private SharedPrefHandler mSharedPrefHandler;
-
     // Local Vars
     private boolean mIsAltSplashLayout = false;
-    private boolean mIsFirstTime;
-    private boolean isButtonClicked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,37 +33,24 @@ public class SplashActivity extends AppCompatActivity {
         mSplashLayout = findViewById(R.id.splash_layout);
         mGetStartedButton = findViewById(R.id.get_started_btn);
 
-        mSharedPrefHandler = SharedPrefHandler.getInstance(SplashActivity.this, "VICPref");
-
-        mIsFirstTime = mSharedPrefHandler.getBoolean("FirstTime", true);
-
-        if(!mIsFirstTime){
-            MoverUtils.moveTo(SplashActivity.this, MainActivity.class);
-            finish();
-        }
-
         mSplashLayoutSet.clone(mSplashLayout);
         mSplashAltLayoutSet.clone(SplashActivity.this, R.layout.activity_splash_alt);
 
         clickOnButton();
 
-
-        new Handler()
-                .postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        animateScreen();
-                    }
-                }, 1000);
-
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                animateScreen();
+            }
+        }, 1000);
     }
 
     private void clickOnButton() {
         mGetStartedButton.setOnClickListener(view -> {
-            isButtonClicked = true;
 
-            mSharedPrefHandler.setBoolean("FirstTime", mIsFirstTime);
-            mIsFirstTime = false;
+            saveScreenStatus();
+
             MoverUtils.moveTo(SplashActivity.this, MainActivity.class);
             finish();
         });
@@ -78,7 +58,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private void animateScreen() {
         Transition changeBounds = new ChangeBounds();
-        changeBounds.setDuration(5000);
+        changeBounds.setDuration(2000);
         changeBounds.setInterpolator(new AnticipateOvershootInterpolator());
 
         TransitionManager.beginDelayedTransition(mSplashLayout, changeBounds);
@@ -90,5 +70,28 @@ public class SplashActivity extends AppCompatActivity {
             mSplashLayoutSet.applyTo(mSplashLayout);
             mIsAltSplashLayout = false;
         }
+    }
+
+    private void saveScreenStatus(){
+        SharedPreferences settings = getSharedPreferences("prefs", 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean("firstRun", false);
+        editor.apply();
+    }
+
+    private boolean getScreenStatus(){
+        SharedPreferences settings = getSharedPreferences("prefs", 0);
+        return settings.getBoolean("firstRun", true);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if(!getScreenStatus()){
+            MoverUtils.moveTo(SplashActivity.this, MainActivity.class);
+            finish();
+        }
+
     }
 }

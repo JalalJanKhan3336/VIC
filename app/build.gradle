@@ -9,6 +9,7 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -54,5 +55,11 @@ dependencies {
     // Glide Dependencies
     implementation 'com.github.bumptech.glide:glide:4.9.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
+
+    // Google Admob Ads Dependency
+    implementation 'com.google.android.gms:play-services-ads:18.1.1'
+
+    // Multi Dex
+    implementation 'androidx.multidex:multidex:2.0.1'
 
 }

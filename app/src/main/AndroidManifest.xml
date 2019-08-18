@@ -18,8 +18,10 @@
         android:roundIcon="@drawable/vic_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity android:name=".MainActivity"
-            android:launchMode="singleInstance"/>
+            android:launchMode="singleTask"/>
+
         <activity
             android:name=".MediaActivity"
             android:parentActivityName=".MainActivity" />
@@ -44,6 +46,10 @@
                 android:resource="@xml/provider_paths" />
 
         </provider>
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/admob_app_id"/>
 
     </application>
 

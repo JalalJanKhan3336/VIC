@@ -31,4 +31,14 @@
     <string name="select_all">Select All</string>
     <string name="wlc_msg">Welcome To VIC</string>
     <string name="get_started">Let\'s Gets Started</string>
+
+    <!-- Google Ads Ids -->
+    <string name="admob_app_id">ca-app-pub-8487024459437907~5936948739</string>
+    <string name="banner_ad_id">ca-app-pub-8487024459437907/2653622920</string>
+    <string name="interstitial_ad_id">ca-app-pub-8487024459437907/3391989526</string>
+
+    <string name="admob_app_test_id">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="banner_ad_test_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="interstitial_ad_test_id">ca-app-pub-3940256099942544/1033173712</string>
+
 </resources>
