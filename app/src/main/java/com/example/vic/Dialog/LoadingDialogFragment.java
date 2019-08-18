@@ -18,7 +18,7 @@ import android.widget.TextView;
 
 import com.example.vic.Common.Constant;
 import com.example.vic.Listener.LoadingDialogListener;
-import com.example.vic.R;
+import com.pakistan.compressor.vic.R;
 
 /**
  * A simple {@link Fragment} subclass.

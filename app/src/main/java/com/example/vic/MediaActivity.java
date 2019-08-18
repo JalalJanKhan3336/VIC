@@ -11,7 +11,6 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -22,15 +21,12 @@ import com.example.vic.Common.Constant;
 import com.example.vic.Dialog.DeleteItemDialogFragment;
 import com.example.vic.Listener.DialogClickListener;
 import com.example.vic.Manager.BitmapManager;
-import com.example.vic.Model.ImageFile;
 import com.example.vic.Model.MediaFiles;
-import com.example.vic.Model.VideoFile;
 import com.example.vic.Utils.GlideUtils;
 import com.example.vic.Utils.MessageUtils;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.pakistan.compressor.vic.R;
 
 import java.io.File;
-import java.util.Objects;
 
 public class MediaActivity extends AppCompatActivity
         implements DialogClickListener {

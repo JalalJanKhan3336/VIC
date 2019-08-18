@@ -14,7 +14,7 @@ import android.widget.ImageView;
 
 import com.example.vic.Common.Constant;
 import com.example.vic.Listener.ChooseActionListener;
-import com.example.vic.R;
+import com.pakistan.compressor.vic.R;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 /**

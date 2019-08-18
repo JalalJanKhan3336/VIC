@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.vic">
+    package="com.pakistan.compressor.vic">
 
     <uses-feature
         android:name="android.hardware.Camera"
@@ -19,14 +19,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".MainActivity"
+        <activity android:name="com.example.vic.MainActivity"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".MediaActivity"
-            android:parentActivityName=".MainActivity" />
+            android:name="com.example.vic.MediaActivity"
+            android:parentActivityName="com.example.vic.MainActivity" />
         <activity
-            android:name=".SplashActivity">
+            android:name="com.example.vic.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -10,13 +10,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.vic.Common.Constant;
 import com.example.vic.Listener.ItemClickListener;
 import com.example.vic.Model.MediaFiles;
-import com.example.vic.R;
+import com.pakistan.compressor.vic.R;
 import com.example.vic.Utils.GlideUtils;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;

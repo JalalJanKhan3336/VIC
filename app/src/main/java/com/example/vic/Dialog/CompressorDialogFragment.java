@@ -11,20 +11,16 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.MediaController;
 import android.widget.TextView;
-import android.widget.VideoView;
 
 import com.example.vic.Common.Constant;
 import com.example.vic.Listener.DialogClickListener;
 import com.example.vic.Model.ImageFile;
 import com.example.vic.Model.MediaFiles;
 import com.example.vic.Model.VideoFile;
-import com.example.vic.R;
+import com.pakistan.compressor.vic.R;
 import com.example.vic.Utils.GlideUtils;
 
 

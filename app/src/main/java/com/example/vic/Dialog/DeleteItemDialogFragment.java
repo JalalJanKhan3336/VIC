@@ -16,10 +16,7 @@ import android.widget.TextView;
 
 import com.example.vic.Common.Constant;
 import com.example.vic.Listener.DialogClickListener;
-import com.example.vic.Model.ImageFile;
-import com.example.vic.Model.MediaFiles;
-import com.example.vic.Model.VideoFile;
-import com.example.vic.R;
+import com.pakistan.compressor.vic.R;
 
 /**
  * A simple {@link Fragment} subclass.

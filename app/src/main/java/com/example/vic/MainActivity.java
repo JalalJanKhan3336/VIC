@@ -50,6 +50,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.pakistan.compressor.vic.R;
 import com.zhihu.matisse.Matisse;
 import com.zhihu.matisse.MimeType;
 

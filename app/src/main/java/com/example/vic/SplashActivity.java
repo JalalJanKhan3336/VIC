@@ -14,6 +14,7 @@ import android.view.animation.AnticipateOvershootInterpolator;
 import android.widget.Button;
 
 import com.example.vic.Utils.MoverUtils;
+import com.pakistan.compressor.vic.R;
 
 public class SplashActivity extends AppCompatActivity {
 
