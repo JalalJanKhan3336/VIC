@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.pakistan.compressor.vic">
+    package="com.pakistan.compressor.videoimagecompressor">
 
     <uses-feature
         android:name="android.hardware.Camera"
@@ -19,14 +19,15 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name="com.example.vic.MainActivity"
+        <activity android:name="com.example.videoimagecompressor.MainActivity"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name="com.example.vic.MediaActivity"
-            android:parentActivityName="com.example.vic.MainActivity" />
+            android:name="com.example.videoimagecompressor.MediaActivity"
+            android:parentActivityName="com.example.videoimagecompressor.MainActivity"
+            android:launchMode="singleTask"/>
         <activity
-            android:name="com.example.vic.SplashActivity">
+            android:name="com.example.videoimagecompressor.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -36,7 +37,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.example.vic.provider"
+            android:authorities="com.example.videoimagecompressor.provider"
             android:exported="false"
             android:grantUriPermissions="true"
             tools:replace="android:authorities">

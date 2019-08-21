@@ -8,7 +8,7 @@
     android:minWidth="300dp"
     android:background="@android:color/white"
     android:padding="@dimen/norm_pad"
-    tools:context="com.example.vic.Dialog.CompressorDialogFragment">
+    tools:context="com.example.videoimagecompressor.Dialog.CompressorDialogFragment">
 
     <!-- Compress Title Text Label -->
     <TextView

@@ -7,7 +7,7 @@
     android:id="@+id/splash_layout"
     android:background="@color/colorLightGray"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context="com.example.vic.SplashActivity">
+    tools:context="com.example.videoimagecompressor.SplashActivity">
 
     <ImageView
         android:id="@+id/logo_holder"

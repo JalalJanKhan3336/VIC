@@ -6,7 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="@dimen/norm_pad"
-    tools:context="com.example.vic.Dialog.ChooseActionFragment"
+    tools:context="com.example.videoimagecompressor.Dialog.ChooseActionFragment"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Dialog Title -->
