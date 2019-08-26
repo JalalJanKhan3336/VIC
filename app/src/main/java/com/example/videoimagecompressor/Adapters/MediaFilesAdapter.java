@@ -50,7 +50,7 @@ public class MediaFilesAdapter extends RecyclerView.Adapter<MediaFilesAdapter.Me
         if(viewType == AD_TYPE){
             itemView = new AdView(mContext);
             ((AdView) itemView).setAdSize(AdSize.BANNER);
-            ((AdView) itemView).setAdUnitId(mContext.getString(R.string.banner_ad_test_id));
+            ((AdView) itemView).setAdUnitId(mContext.getString(R.string.banner_ad_id));
 
             float density = mContext.getResources().getDisplayMetrics().density;
             int height = Math.round(AdSize.BANNER.getHeight() * density);

@@ -119,7 +119,6 @@ public class MainActivity extends AppCompatActivity
                 MoverUtils.moveTo(MainActivity.this, MediaActivity.class);
         }
 
-
     };
 
     // ActionMode Callback Ref
@@ -275,7 +274,7 @@ public class MainActivity extends AppCompatActivity
         AdRequest mAdRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
 
         mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId(getString(R.string.interstitial_ad_test_id));
+        mInterstitialAd.setAdUnitId(getString(R.string.interstitial_ad_id));
         mInterstitialAd.loadAd(mAdRequest);
         mInterstitialAd.setAdListener(mAdListenerRef);
 
