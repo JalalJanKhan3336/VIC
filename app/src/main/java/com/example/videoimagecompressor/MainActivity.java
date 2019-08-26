@@ -275,7 +275,7 @@ public class MainActivity extends AppCompatActivity
         AdRequest mAdRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
 
         mInterstitialAd = new InterstitialAd(this);
-        mInterstitialAd.setAdUnitId(getString(R.string.interstitial_ad_id));
+        mInterstitialAd.setAdUnitId(getString(R.string.interstitial_ad_test_id));
         mInterstitialAd.loadAd(mAdRequest);
         mInterstitialAd.setAdListener(mAdListenerRef);
 
@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity
     private void clickOnButton() {
         mNewCompressionFAB.setOnClickListener(view -> {
             mIsViewFile = false;
-            mCompressorDialogFragment.show(getSupportFragmentManager(), mCompressorDialogFragment.getTag());
+            mChooseActionFragment.show(getSupportFragmentManager(), mChooseActionFragment.getTag());
         });
 
     }
